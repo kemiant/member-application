@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getApplications } from '@/lib/applications'
 import { getRatingsAvgMap } from '@/lib/ratings'
+import { getInfoMeetingAttendanceCounts } from '@/lib/infoMeeting'
 
 interface SummaryData {
   totalApplications: number
@@ -12,13 +13,36 @@ interface SummaryData {
   mcCombs: number
   nonMcCombs: number
   previousMembers: number
+  top60McCombs: number
   topRated: Array<{
     eid: string
     firstName: string
     lastName: string
+    email: string
     primaryMajor: string
+    year: string
+    isMcCombs: boolean
+    isReturningPath: boolean
     avgRating: number
     ratingsCount: number
+    raterNames: string[]
+    infoSessionsAttended: number
+    rowNumber: number
+    previouslyMember: string
+    appliedBefore: string
+  }>
+  allRatings: Array<{
+    eid: string
+    firstName: string
+    lastName: string
+    primaryMajor: string
+    year: string
+    isMcCombs: boolean
+    isReturningPath: boolean
+    avgRating: number | null
+    ratingsCount: number
+    infoSessionsAttended: number
+    rowNumber: number
   }>
   previousMembersList: Array<{
     eid: string
@@ -44,12 +68,15 @@ export async function GET() {
   try {
     const applications = await getApplications()
     const ratingsMap = await getRatingsAvgMap()
+    const attendanceCounts = await getInfoMeetingAttendanceCounts()
 
-    // Enrich applications with ratings
+    // Enrich applications with ratings and info session attendance
     const enrichedApps = applications.map(app => ({
       ...app,
       avgRating: ratingsMap.get(app.eid)?.avg || null,
       ratingsCount: ratingsMap.get(app.eid)?.count || 0,
+      raterNames: ratingsMap.get(app.eid)?.raterNames || [],
+      infoSessionsAttended: attendanceCounts.get(app.eid) || 0,
     }))
 
     // Calculate aggregations
@@ -112,9 +139,45 @@ export async function GET() {
         eid: app.eid,
         firstName: app.firstName,
         lastName: app.lastName,
+        email: app.email,
         primaryMajor: app.primaryMajor,
+        year: app.year,
+        isMcCombs: app.isMcCombs,
+        isReturningPath: app.isReturningPath,
         avgRating: app.avgRating!,
         ratingsCount: app.ratingsCount,
+        raterNames: app.raterNames,
+        infoSessionsAttended: app.infoSessionsAttended,
+        rowNumber: app.rowNumber,
+        previouslyMember: app.previouslyMember,
+        appliedBefore: app.appliedBefore,
+      }))
+
+    // Calculate how many of top 60 are McCombs
+    const top60 = topRated.slice(0, 60)
+    const top60McCombs = top60.filter(app => app.isMcCombs).length
+
+    // Get all applications sorted by rating (with unrated at the end)
+    const allRatings = enrichedApps
+      .sort((a, b) => {
+        // Sort by rating (nulls last), then by row number
+        if (a.avgRating === null && b.avgRating === null) return a.rowNumber - b.rowNumber
+        if (a.avgRating === null) return 1
+        if (b.avgRating === null) return -1
+        return b.avgRating - a.avgRating
+      })
+      .map(app => ({
+        eid: app.eid,
+        firstName: app.firstName,
+        lastName: app.lastName,
+        primaryMajor: app.primaryMajor,
+        year: app.year,
+        isMcCombs: app.isMcCombs,
+        isReturningPath: app.isReturningPath,
+        avgRating: app.avgRating,
+        ratingsCount: app.ratingsCount,
+        infoSessionsAttended: app.infoSessionsAttended,
+        rowNumber: app.rowNumber,
       }))
 
     const summary: SummaryData = {
@@ -125,7 +188,9 @@ export async function GET() {
       mcCombs,
       nonMcCombs,
       previousMembers,
+      top60McCombs,
       topRated,
+      allRatings,
       previousMembersList,
     }
 

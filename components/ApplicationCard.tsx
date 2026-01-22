@@ -11,6 +11,8 @@ interface Application {
   year: string
   primaryMajor: string
   isMcCombs: boolean
+  previouslyMember: string
+  appliedBefore: string
   headshotUrl: string
   resumeUrl: string
   returningEssay1: string
@@ -28,6 +30,7 @@ interface Application {
   isReturningPath: boolean
   avgRating: number | null
   ratingsCount: number
+  infoSessionsAttended: number
 }
 
 interface ApplicationCardProps {
@@ -39,9 +42,9 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
   const [rating, setRating] = useState<number | null>(null)
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showReturning, setShowReturning] = useState(false)
-  const [showNew, setShowNew] = useState(false)
+  const [showEssays, setShowEssays] = useState(false)
   const [showAdditional, setShowAdditional] = useState(false)
+  const [showName, setShowName] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,12 +63,65 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
     }
   }
 
+  const notConsidered = application.infoSessionsAttended === 0
+
   return (
-    <div className="card" style={{ marginBottom: '1rem' }}>
-      <div className="card-header">
-        <h3 className="card-title" style={{ marginBottom: '0.5rem' }}>
-          {application.firstName} {application.lastName}
-        </h3>
+    <div 
+      className="card" 
+      style={{ 
+        marginBottom: '1rem',
+        opacity: notConsidered ? 0.5 : 1,
+        position: 'relative',
+        border: notConsidered ? '2px solid #ef4444' : undefined,
+      }}
+    >
+      {notConsidered && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }} />
+      )}
+      <div className="card-header" style={{ position: 'relative', zIndex: 2 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+            <h3 className="card-title" style={{ margin: 0 }}>
+              {showName ? `${application.firstName} ${application.lastName}` : `Applicant ${application.rowNumber}`}
+            </h3>
+            <button
+              onClick={() => setShowName(!showName)}
+              style={{
+                backgroundColor: 'var(--baxa-purple)',
+                color: 'white',
+                border: 'none',
+                padding: '0.25rem 0.625rem',
+                borderRadius: '0.375rem',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: 500,
+              }}
+            >
+              {showName ? '🔒 Hide' : '👁️ Reveal'}
+            </button>
+          </div>
+          {notConsidered && (
+            <span style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              padding: '0.25rem 0.75rem',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+            }}>
+              NOT CONSIDERED
+            </span>
+          )}
+        </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
           <span className="badge badge-purple">Row {application.rowNumber}</span>
           <span className="badge badge-purple">{application.year}</span>
@@ -76,6 +132,21 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
           {application.isReturningPath && (
             <span className="badge badge-warning">Returning</span>
           )}
+          {application.previouslyMember?.toLowerCase().startsWith('y') && (
+            <span className="badge" style={{ backgroundColor: '#8b5cf6', color: 'white' }}>Previous Member</span>
+          )}
+          {application.appliedBefore?.toLowerCase().startsWith('y') && (
+            <span className="badge" style={{ backgroundColor: '#f59e0b', color: 'white' }}>Applied Before</span>
+          )}
+          <span 
+            className="badge"
+            style={{
+              backgroundColor: application.infoSessionsAttended > 0 ? '#10b981' : '#ef4444',
+              color: 'white',
+            }}
+          >
+            Info Sessions: {application.infoSessionsAttended}
+          </span>
           {application.avgRating !== null && (
             <span className="badge badge-success">
               ⭐ {application.avgRating.toFixed(2)} ({application.ratingsCount})
@@ -84,12 +155,12 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
         </div>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '1rem', position: 'relative', zIndex: 2 }}>
         <p style={{ margin: '0.25rem 0', color: 'var(--text-secondary)' }}>
           <strong>EID:</strong> {application.eid}
         </p>
         <p style={{ margin: '0.25rem 0', color: 'var(--text-secondary)' }}>
-          <strong>Email:</strong> {application.email}
+          <strong>Email:</strong> {showName ? application.email : '••••••@••••.•••'}
         </p>
         {application.headshotUrl && (
           <p style={{ margin: '0.25rem 0' }}>
@@ -107,104 +178,10 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
         )}
       </div>
 
-      {/* Returning Member Essays */}
-      {application.isReturningPath && (
-        <div style={{ marginBottom: '1rem' }}>
-          <button
-            onClick={() => setShowReturning(!showReturning)}
-            style={{
-              backgroundColor: 'var(--baxa-purple-bg)',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              fontWeight: 500,
-              color: 'var(--baxa-purple-dark)',
-              width: '100%',
-              textAlign: 'left'
-            }}
-          >
-            {showReturning ? '▼' : '▶'} Returning Member Essays
-          </button>
-          {showReturning && (
-            <div style={{ marginTop: '0.75rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}>
-              {application.returningEssay1 && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <strong>Essay 1:</strong>
-                  <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningEssay1}</p>
-                </div>
-              )}
-              {application.returningEssay2 && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <strong>Essay 2:</strong>
-                  <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningEssay2}</p>
-                </div>
-              )}
-              {application.returningFavoriteMemory && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <strong>Favorite Memory:</strong>
-                  <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningFavoriteMemory}</p>
-                </div>
-              )}
-              {application.returningReEngage && (
-                <div>
-                  <strong>How to Re-engage:</strong>
-                  <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningReEngage}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* New Member Essays */}
-      {!application.isReturningPath && (
-        <div style={{ marginBottom: '1rem' }}>
-          <button
-            onClick={() => setShowNew(!showNew)}
-            style={{
-              backgroundColor: 'var(--baxa-purple-bg)',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              fontWeight: 500,
-              color: 'var(--baxa-purple-dark)',
-              width: '100%',
-              textAlign: 'left'
-            }}
-          >
-            {showNew ? '▼' : '▶'} New Member Essays
-          </button>
-          {showNew && (
-            <div style={{ marginTop: '0.75rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}>
-              {application.newEssay1 && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <strong>Essay 1:</strong>
-                  <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.newEssay1}</p>
-                </div>
-              )}
-              {application.newEssay2 && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <strong>Essay 2:</strong>
-                  <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.newEssay2}</p>
-                </div>
-              )}
-              {application.newEssay3 && (
-                <div>
-                  <strong>Essay 3:</strong>
-                  <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.newEssay3}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Additional Info */}
-      <div style={{ marginBottom: '1rem' }}>
+      {/* Essays Section - Single Dropdown */}
+      <div style={{ marginBottom: '1rem', position: 'relative', zIndex: 2 }}>
         <button
-          onClick={() => setShowAdditional(!showAdditional)}
+          onClick={() => setShowEssays(!showEssays)}
           style={{
             backgroundColor: 'var(--baxa-purple-bg)',
             border: 'none',
@@ -217,48 +194,121 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
             textAlign: 'left'
           }}
         >
-          {showAdditional ? '▼' : '▶'} Additional Information
+          {showEssays ? '▼' : '▶'} Essays
         </button>
-        {showAdditional && (
+        {showEssays && (
           <div style={{ marginTop: '0.75rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}>
-            {application.events && (
-              <div style={{ marginBottom: '0.75rem' }}>
-                <strong>Events:</strong>
-                <p style={{ marginTop: '0.25rem' }}>{application.events}</p>
-              </div>
+            {/* Returning Member Essays */}
+            {application.isReturningPath && (
+              <>
+                {application.events && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>Which coffee chats did you attend?</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.events}</p>
+                  </div>
+                )}
+                {application.returningEssay1 && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>Tell us about yourself - 250 words or less.</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningEssay1}</p>
+                  </div>
+                )}
+                {application.returningReEngage && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>How do you hope to re-engage with BAXA and make the most of your membership moving forward? - 250 words or less</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningReEngage}</p>
+                  </div>
+                )}
+                {application.returningFavoriteMemory && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>What was your favorite memory from BAXA and why? - 250 words or less</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningFavoriteMemory}</p>
+                  </div>
+                )}
+                {application.returningEssay2 && (
+                  <div>
+                    <strong>What is something in BAXA you hope to be more involved with this semester? - 250 words or less</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.returningEssay2}</p>
+                  </div>
+                )}
+              </>
             )}
-            {application.analyticsExperience && (
-              <div style={{ marginBottom: '0.75rem' }}>
-                <strong>Analytics Experience:</strong>
-                <p style={{ marginTop: '0.25rem' }}>{application.analyticsExperience}</p>
-              </div>
-            )}
-            {application.lunch && (
-              <div style={{ marginBottom: '0.75rem' }}>
-                <strong>Lunch Preference:</strong>
-                <p style={{ marginTop: '0.25rem' }}>{application.lunch}</p>
-              </div>
-            )}
-            {application.timeCommitments && (
-              <div style={{ marginBottom: '0.75rem' }}>
-                <strong>Time Commitments:</strong>
-                <p style={{ marginTop: '0.25rem' }}>{application.timeCommitments}</p>
-              </div>
-            )}
-            {application.anythingElse && (
-              <div>
-                <strong>Anything Else:</strong>
-                <p style={{ marginTop: '0.25rem' }}>{application.anythingElse}</p>
-              </div>
+
+            {/* New Member Essays */}
+            {!application.isReturningPath && (
+              <>
+                {application.newEssay1 && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>Why do you want to be a part of BAXA? - 250 words or less</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.newEssay1}</p>
+                  </div>
+                )}
+                {application.analyticsExperience && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>What experience do you have with data analytics or data science? (Experience isn't required - just want to make sure we're meeting members' needs!) - 50 words or less</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.analyticsExperience}</p>
+                  </div>
+                )}
+                {application.lunch && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>Which person (dead or alive) would you want to have lunch with and why? - 250 words or less</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.lunch}</p>
+                  </div>
+                )}
+                {application.newEssay2 && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong>Tell us about yourself! - 250 words or less</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.newEssay2}</p>
+                  </div>
+                )}
+                {application.timeCommitments && (
+                  <div>
+                    <strong>What are your other time commitments this semester?</strong>
+                    <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.timeCommitments}</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
       </div>
 
+      {/* Additional Info */}
+      {application.anythingElse && (
+        <div style={{ marginBottom: '1rem', position: 'relative', zIndex: 2 }}>
+          <button
+            onClick={() => setShowAdditional(!showAdditional)}
+            style={{
+              backgroundColor: 'var(--baxa-purple-bg)',
+              border: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.375rem',
+              cursor: 'pointer',
+              fontWeight: 500,
+              color: 'var(--baxa-purple-dark)',
+              width: '100%',
+              textAlign: 'left'
+            }}
+          >
+            {showAdditional ? '▼' : '▶'} Additional Information
+          </button>
+          {showAdditional && (
+            <div style={{ marginTop: '0.75rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}>
+              <div>
+                <strong>Anything else we should know? (OPTIONAL)</strong>
+                <p style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{application.anythingElse}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Rating Form */}
       <form onSubmit={handleSubmit} style={{ 
         borderTop: '1px solid var(--card-border)', 
-        paddingTop: '1rem' 
+        paddingTop: '1rem',
+        position: 'relative',
+        zIndex: 2
       }}>
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ 
@@ -266,10 +316,10 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
             fontWeight: 500, 
             marginBottom: '0.5rem' 
           }}>
-            Your Rating (0-5)
+            Your Rating (1-5)
           </label>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {[0, 1, 2, 3, 4, 5].map(val => (
+            {[1, 2, 3, 4, 5].map(val => (
               <button
                 key={val}
                 type="button"
@@ -302,10 +352,20 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
           </label>
           <textarea
             id={`comment-${application.eid}`}
-            className="textarea"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Add your thoughts..."
+            style={{ 
+              width: '375px', 
+              maxWidth: '100%',
+              padding: '0.5rem 0.75rem',
+              border: '1px solid var(--card-border)',
+              borderRadius: '0.375rem',
+              fontSize: '1rem',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              minHeight: '3rem'
+            }}
           />
         </div>
 

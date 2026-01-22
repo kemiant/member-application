@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import ApplicationCard from '@/components/ApplicationCard'
 import RaterNameGate from '@/components/RaterNameGate'
 import AssignedRowsFilter, { parseAssignedRows } from '@/components/AssignedRowsFilter'
+import Navigation from '@/components/Navigation'
 
 interface Application {
   eid: string
@@ -15,6 +17,8 @@ interface Application {
   year: string
   primaryMajor: string
   isMcCombs: boolean
+  previouslyMember: string
+  appliedBefore: string
   headshotUrl: string
   resumeUrl: string
   returningEssay1: string
@@ -35,6 +39,7 @@ interface Application {
 }
 
 export default function ApplicationsClient() {
+  const searchParams = useSearchParams()
   const [applications, setApplications] = useState<Application[]>([])
   const [filteredApps, setFilteredApps] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,6 +53,14 @@ export default function ApplicationsClient() {
   const [eidFilter, setEidFilter] = useState('')
   const [textSearch, setTextSearch] = useState('')
   const [assignedRows, setAssignedRows] = useState<Set<number>>(new Set())
+
+  // Check for EID in URL params and set it as filter
+  useEffect(() => {
+    const eidParam = searchParams.get('eid')
+    if (eidParam) {
+      setEidFilter(eidParam)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     fetchApplications()
@@ -150,14 +163,16 @@ export default function ApplicationsClient() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-      <h1 style={{ 
-        marginBottom: '1.5rem', 
-        color: 'var(--baxa-purple-dark)',
-        fontSize: '2rem'
-      }}>
-        BAXA Member Applications
-      </h1>
+    <>
+      <Navigation />
+      <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
+        <h1 style={{ 
+          marginBottom: '1.5rem', 
+          color: 'var(--baxa-purple-dark)',
+          fontSize: '2rem'
+        }}>
+          BAXA Member Applications
+        </h1>
 
       <RaterNameGate onReady={setRaterName} />
 
@@ -170,8 +185,8 @@ export default function ApplicationsClient() {
             </h2>
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1rem'
+              gridTemplateColumns: 'repeat(6, minmax(120px, 1fr))',
+              gap: '0.75rem'
             }}>
               <div>
                 <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>
@@ -181,6 +196,7 @@ export default function ApplicationsClient() {
                   className="select" 
                   value={pathFilter}
                   onChange={(e) => setPathFilter(e.target.value as any)}
+                  style={{ width: '100%' }}
                 >
                   <option value="all">All</option>
                   <option value="returning">Returning</option>
@@ -196,6 +212,7 @@ export default function ApplicationsClient() {
                   className="select"
                   value={yearFilter}
                   onChange={(e) => setYearFilter(e.target.value)}
+                  style={{ width: '100%' }}
                 >
                   <option value="">All Years</option>
                   {years.map(year => (
@@ -212,6 +229,7 @@ export default function ApplicationsClient() {
                   className="select"
                   value={majorFilter}
                   onChange={(e) => setMajorFilter(e.target.value)}
+                  style={{ width: '100%' }}
                 >
                   <option value="">All Majors</option>
                   {majors.map(major => (
@@ -230,11 +248,12 @@ export default function ApplicationsClient() {
                   placeholder="Search by EID"
                   value={eidFilter}
                   onChange={(e) => setEidFilter(e.target.value)}
+                  style={{ width: '100%', maxWidth: '150px' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem', marginLeft: '-40px' }}>
                   Text Search
                 </label>
                 <input
@@ -243,6 +262,7 @@ export default function ApplicationsClient() {
                   placeholder="Search name, email, essays..."
                   value={textSearch}
                   onChange={(e) => setTextSearch(e.target.value)}
+                  style={{ width: '100%', maxWidth: '220px', marginLeft: '-40px' }}
                 />
               </div>
 
@@ -251,17 +271,6 @@ export default function ApplicationsClient() {
                   onChange={(rows) => {
                     setAssignedRows(rows)
                   }} 
-                />
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="e.g., 12-25,40,42-45"
-                  value={assignedRowsInput}
-                  onChange={(e) => {
-                    setAssignedRowsInput(e.target.value)
-                    setAssignedRows(parseAssignedRows(e.target.value))
-                  }}
-                  style={{ marginTop: '0.5rem' }}
                 />
               </div>
             </div>
@@ -298,6 +307,7 @@ export default function ApplicationsClient() {
           )}
         </>
       )}
-    </div>
+      </div>
+    </>
   )
 }

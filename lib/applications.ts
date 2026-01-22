@@ -14,6 +14,7 @@ export interface Application {
   businessMinor: string
   year: string
   previouslyMember: string
+  appliedBefore: string
   returningEssay1: string
   returningEssay2: string
   returningFavoriteMemory: string
@@ -28,6 +29,7 @@ export interface Application {
   anythingElse: string
   isReturningPath: boolean
   isMcCombs: boolean
+  infoSessionsAttended: number
 }
 
 // The exact resume header from Google Forms
@@ -67,6 +69,7 @@ export async function getApplications(): Promise<Application[]> {
   const businessMinorIdx = getColIndex(/business.*minor/i)
   const yearIdx = getColIndex(/year/i)
   const previouslyMemberIdx = getColIndex(/previously.*member/i)
+  const appliedBeforeIdx = getColIndex(/applied.*before|Have you applied/i)
   const eventsIdx = getColIndex(/events/i)
   const analyticsExpIdx = getColIndex(/analytics.*experience/i)
   const lunchIdx = getColIndex(/lunch/i)
@@ -90,14 +93,14 @@ export async function getApplications(): Promise<Application[]> {
   })
 
   // Find returning member essays
-  const returningEssay1Idx = getColIndex(/returning.*1/i)
-  const returningEssay2Idx = getColIndex(/returning.*2/i)
+  const returningEssay1Idx = getColIndex(/Tell us about yourself.*returning/i)
+  const returningEssay2Idx = getColIndex(/something in BAXA you hope to be more involved/i)
   const returningFavoriteMemoryIdx = getColIndex(/favorite.*memory/i)
   const returningReEngageIdx = getColIndex(/re-engage|re.*engage/i)
 
   // Find new member essays
-  const newEssay1Idx = getColIndex(/new.*1/i)
-  const newEssay2Idx = getColIndex(/new.*2/i)
+  const newEssay1Idx = getColIndex(/Why do you want to be a part of BAXA/i)
+  const newEssay2Idx = getColIndex(/Tell us about yourself!|Tell us about yourself(?!.*returning)/i)
   const newEssay3Idx = getColIndex(/new.*3/i)
 
   return dataRows.map((row, index) => {
@@ -126,6 +129,7 @@ export async function getApplications(): Promise<Application[]> {
       businessMinor: row[businessMinorIdx] || '',
       year: row[yearIdx] || '',
       previouslyMember: row[previouslyMemberIdx] || '',
+      appliedBefore: row[appliedBeforeIdx] || '',
       returningEssay1,
       returningEssay2,
       returningFavoriteMemory,

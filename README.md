@@ -71,6 +71,7 @@ ONLY_SHARED_EMAIL=texasbaxassociation@gmail.com
 
 # Google Sheets Integration
 GOOGLE_SHEETS_ID=your-spreadsheet-id
+GOOGLE_INFO_MEETING_SHEETS_ID=your-info-meeting-spreadsheet-id
 GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour\nPrivate\nKey\nHere\n-----END PRIVATE KEY-----\n"
 ```

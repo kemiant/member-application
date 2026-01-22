@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { getApplications } from '@/lib/applications'
 import { getRatingsAvgMap } from '@/lib/ratings'
+import { getInfoMeetingAttendanceCounts } from '@/lib/infoMeeting'
+import Navigation from '@/components/Navigation'
+import TopRatedSection from '@/components/TopRatedSection'
 import '@/styles/theme.css'
 
 interface SummaryData {
@@ -13,13 +16,36 @@ interface SummaryData {
   mcCombs: number
   nonMcCombs: number
   previousMembers: number
+  top60McCombs: number
   topRated: Array<{
     eid: string
     firstName: string
     lastName: string
+    email: string
     primaryMajor: string
+    year: string
+    isMcCombs: boolean
+    isReturningPath: boolean
     avgRating: number
     ratingsCount: number
+    raterNames: string[]
+    infoSessionsAttended: number
+    rowNumber: number
+    previouslyMember: string
+    appliedBefore: string
+  }>
+  allRatings: Array<{
+    eid: string
+    firstName: string
+    lastName: string
+    primaryMajor: string
+    year: string
+    isMcCombs: boolean
+    isReturningPath: boolean
+    avgRating: number | null
+    ratingsCount: number
+    infoSessionsAttended: number
+    rowNumber: number
   }>
   previousMembersList: Array<{
     eid: string
@@ -47,12 +73,15 @@ export default async function SummaryPage() {
   // Fetch data directly instead of calling API route
   const applications = await getApplications()
   const ratingsMap = await getRatingsAvgMap()
+  const attendanceCounts = await getInfoMeetingAttendanceCounts()
 
-  // Enrich applications with ratings
+  // Enrich applications with ratings and info session attendance
   const enrichedApps = applications.map(app => ({
     ...app,
     avgRating: ratingsMap.get(app.eid)?.avg || null,
     ratingsCount: ratingsMap.get(app.eid)?.count || 0,
+    raterNames: ratingsMap.get(app.eid)?.raterNames || [],
+    infoSessionsAttended: attendanceCounts.get(app.eid) || 0,
   }))
 
   // Calculate aggregations
@@ -115,9 +144,45 @@ export default async function SummaryPage() {
       eid: app.eid,
       firstName: app.firstName,
       lastName: app.lastName,
+      email: app.email,
       primaryMajor: app.primaryMajor,
+      year: app.year,
+      isMcCombs: app.isMcCombs,
+      isReturningPath: app.isReturningPath,
       avgRating: app.avgRating!,
       ratingsCount: app.ratingsCount,
+      raterNames: app.raterNames,
+      infoSessionsAttended: app.infoSessionsAttended,
+      rowNumber: app.rowNumber,
+      previouslyMember: app.previouslyMember,
+      appliedBefore: app.appliedBefore,
+    }))
+
+  // Calculate how many of top 60 are McCombs
+  const top60 = topRated.slice(0, 60)
+  const top60McCombs = top60.filter(app => app.isMcCombs).length
+
+  // Get all applications sorted by rating (with unrated at the end)
+  const allRatings = enrichedApps
+    .sort((a, b) => {
+      // Sort by rating (nulls last), then by row number
+      if (a.avgRating === null && b.avgRating === null) return a.rowNumber - b.rowNumber
+      if (a.avgRating === null) return 1
+      if (b.avgRating === null) return -1
+      return b.avgRating - a.avgRating
+    })
+    .map(app => ({
+      eid: app.eid,
+      firstName: app.firstName,
+      lastName: app.lastName,
+      primaryMajor: app.primaryMajor,
+      year: app.year,
+      isMcCombs: app.isMcCombs,
+      isReturningPath: app.isReturningPath,
+      avgRating: app.avgRating,
+      ratingsCount: app.ratingsCount,
+      infoSessionsAttended: app.infoSessionsAttended,
+      rowNumber: app.rowNumber,
     }))
 
   const summary: SummaryData = {
@@ -128,19 +193,23 @@ export default async function SummaryPage() {
     mcCombs,
     nonMcCombs,
     previousMembers,
+    top60McCombs,
     topRated,
+    allRatings,
     previousMembersList,
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ 
-        marginBottom: '1.5rem', 
-        color: 'var(--baxa-purple-dark)',
-        fontSize: '2rem'
-      }}>
-        Applications Summary
-      </h1>
+    <>
+      <Navigation />
+      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+        <h1 style={{ 
+          marginBottom: '1.5rem', 
+          color: 'var(--baxa-purple-dark)',
+          fontSize: '2rem'
+        }}>
+          Applications Summary
+        </h1>
 
       {/* Overview Stats */}
       <div style={{ 
@@ -160,19 +229,10 @@ export default async function SummaryPage() {
 
         <div className="card">
           <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Returning Path
+            Returning Applicants
           </h3>
           <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
             {summary.returningPath}
-          </p>
-        </div>
-
-        <div className="card">
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            New Path
-          </h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
-            {summary.newPath}
           </p>
         </div>
 
@@ -204,147 +264,104 @@ export default async function SummaryPage() {
         </div>
       </div>
 
-      {/* By Major */}
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--baxa-purple-dark)' }}>
-          Applications by Major
-        </h2>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-          gap: '0.75rem'
-        }}>
-          {Object.entries(summary.byPrimaryMajor)
-            .sort((a, b) => b[1] - a[1])
-            .map(([major, count]) => (
-              <div 
-                key={major}
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  padding: '0.5rem 0.75rem',
-                  backgroundColor: 'var(--baxa-purple-bg)',
-                  borderRadius: '0.375rem'
-                }}
-              >
-                <span style={{ fontWeight: 500 }}>{major}</span>
-                <span className="badge badge-purple">{count}</span>
-              </div>
-            ))}
-        </div>
-      </div>
+      {/* Top 60 Rated Section */}
+      <TopRatedSection topRated={summary.topRated} />
 
       {/* Top Rated */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <h2 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--baxa-purple-dark)' }}>
-          Top Rated Applicants
+          All Applicants - Ratings Summary
         </h2>
-        {summary.topRated.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)' }}>No rated applications yet</p>
+        {summary.allRatings.length === 0 ? (
+          <p style={{ color: 'var(--text-secondary)' }}>No applications found</p>
         ) : (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '1rem'
-          }}>
-            {summary.topRated.slice(0, 20).map(app => (
-              <div 
-                key={app.eid}
-                style={{ 
-                  padding: '1rem',
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ 
+              width: '100%', 
+              borderCollapse: 'collapse',
+              fontSize: '0.875rem'
+            }}>
+              <thead>
+                <tr style={{ 
                   backgroundColor: 'var(--baxa-purple-bg)',
-                  borderRadius: '0.5rem',
-                  border: '1px solid var(--baxa-purple-light)'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div>
-                    <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1.125rem' }}>
+                  borderBottom: '2px solid var(--baxa-purple-light)'
+                }}>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Row</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Name</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Major</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Year</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Path</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Info Sessions</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Avg Rating</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}># Ratings</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summary.allRatings.map((app, index) => (
+                  <tr 
+                    key={app.eid}
+                    style={{ 
+                      borderBottom: '1px solid var(--card-border)',
+                      backgroundColor: app.infoSessionsAttended === 0 ? 'rgba(239, 68, 68, 0.05)' : 
+                                       index % 2 === 0 ? 'white' : '#f9fafb'
+                    }}
+                  >
+                    <td style={{ padding: '0.75rem' }}>
+                      <span className="badge badge-purple">{app.rowNumber}</span>
+                    </td>
+                    <td style={{ padding: '0.75rem', fontWeight: 500 }}>
                       {app.firstName} {app.lastName}
-                    </h3>
-                    <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                      {app.primaryMajor}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ 
-                      fontSize: '1.5rem', 
-                      fontWeight: 'bold', 
-                      color: 'var(--baxa-purple)' 
-                    }}>
-                      {app.avgRating.toFixed(2)}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      {app.ratingsCount} rating{app.ratingsCount !== 1 ? 's' : ''}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Previous Members */}
-      <div className="card">
-        <h2 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--baxa-purple-dark)' }}>
-          Previous Members (Returning Applicants)
-        </h2>
-        {summary.previousMembersList.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)' }}>No returning members with responses</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {summary.previousMembersList.map(member => (
-              <div 
-                key={member.eid}
-                style={{ 
-                  padding: '1.25rem',
-                  backgroundColor: '#f9fafb',
-                  borderRadius: '0.5rem',
-                  border: '1px solid var(--card-border)'
-                }}
-              >
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1.125rem', fontWeight: 600 }}>
-                    {member.firstName} {member.lastName}
-                  </h3>
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                    <span className="badge badge-purple">{member.year}</span>
-                    <span className="badge badge-purple">{member.primaryMajor}</span>
-                    {member.avgRating !== null && (
-                      <span className="badge badge-success">
-                        ⭐ {member.avgRating.toFixed(2)} ({member.ratingsCount})
+                    </td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {app.primaryMajor}
+                        {app.isMcCombs && (
+                          <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>McCombs</span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>{app.year}</td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                      {app.isReturningPath ? (
+                        <span className="badge badge-warning">Returning</span>
+                      ) : (
+                        <span className="badge" style={{ backgroundColor: '#3b82f6', color: 'white' }}>New</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                      <span 
+                        className="badge"
+                        style={{
+                          backgroundColor: app.infoSessionsAttended > 0 ? '#10b981' : '#ef4444',
+                          color: 'white',
+                        }}
+                      >
+                        {app.infoSessionsAttended}
                       </span>
-                    )}
-                  </div>
-                </div>
-
-                {member.returningFavoriteMemory && (
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <strong style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                      Favorite Memory:
-                    </strong>
-                    <p style={{ margin: '0.25rem 0 0 0', whiteSpace: 'pre-wrap' }}>
-                      {member.returningFavoriteMemory}
-                    </p>
-                  </div>
-                )}
-
-                {member.returningReEngage && (
-                  <div>
-                    <strong style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                      How to Re-engage:
-                    </strong>
-                    <p style={{ margin: '0.25rem 0 0 0', whiteSpace: 'pre-wrap' }}>
-                      {member.returningReEngage}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
+                    </td>
+                    <td style={{ 
+                      padding: '0.75rem', 
+                      textAlign: 'center',
+                      fontWeight: 600,
+                      color: app.avgRating !== null ? 'var(--baxa-purple)' : 'var(--text-secondary)'
+                    }}>
+                      {app.avgRating !== null ? app.avgRating.toFixed(2) : '-'}
+                    </td>
+                    <td style={{ 
+                      padding: '0.75rem', 
+                      textAlign: 'center',
+                      color: 'var(--text-secondary)'
+                    }}>
+                      {app.ratingsCount > 0 ? app.ratingsCount : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }

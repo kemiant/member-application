@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { ensureRatingsSheet } from '@/lib/sheets'
 import { getApplications } from '@/lib/applications'
 import { getRatingsAvgMap } from '@/lib/ratings'
+import { getInfoMeetingAttendanceCounts } from '@/lib/infoMeeting'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -16,15 +17,17 @@ export async function GET() {
     // Ensure Ratings sheet exists
     await ensureRatingsSheet(process.env.GOOGLE_SHEETS_ID!)
 
-    // Fetch applications and ratings
+    // Fetch applications, ratings, and info meeting attendance
     const applications = await getApplications()
     const ratingsMap = await getRatingsAvgMap()
+    const attendanceCounts = await getInfoMeetingAttendanceCounts()
 
-    // Enrich applications with rating data
+    // Enrich applications with rating data and attendance count
     const enrichedApplications = applications.map(app => ({
       ...app,
       avgRating: ratingsMap.get(app.eid)?.avg || null,
       ratingsCount: ratingsMap.get(app.eid)?.count || 0,
+      infoSessionsAttended: attendanceCounts.get(app.eid) || 0,
     }))
 
     // Sort by timestamp ascending (oldest first)

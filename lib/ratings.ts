@@ -12,6 +12,7 @@ export interface Rating {
 export interface RatingStats {
   avg: number
   count: number
+  raterNames: string[]
 }
 
 // Append a rating to the Ratings sheet
@@ -56,28 +57,33 @@ export async function getRatingsAvgMap(): Promise<Map<string, RatingStats>> {
 
   const rows = response.data.values || []
   
-  // Group ratings by EID
-  const ratingsByEid = new Map<string, number[]>()
+  // Group ratings by EID with rater names
+  const ratingsByEid = new Map<string, { ratings: number[], raterNames: string[] }>()
   
   rows.forEach(row => {
     const eid = row[0]
+    const raterName = row[1]
     const rating = parseFloat(row[2])
     
     if (eid && !isNaN(rating)) {
       if (!ratingsByEid.has(eid)) {
-        ratingsByEid.set(eid, [])
+        ratingsByEid.set(eid, { ratings: [], raterNames: [] })
       }
-      ratingsByEid.get(eid)!.push(rating)
+      const data = ratingsByEid.get(eid)!
+      data.ratings.push(rating)
+      if (raterName) {
+        data.raterNames.push(raterName)
+      }
     }
   })
 
   // Calculate averages
   const avgMap = new Map<string, RatingStats>()
   
-  ratingsByEid.forEach((ratings, eid) => {
-    const sum = ratings.reduce((acc, r) => acc + r, 0)
-    const avg = sum / ratings.length
-    avgMap.set(eid, { avg, count: ratings.length })
+  ratingsByEid.forEach((data, eid) => {
+    const sum = data.ratings.reduce((acc, r) => acc + r, 0)
+    const avg = sum / data.ratings.length
+    avgMap.set(eid, { avg, count: data.ratings.length, raterNames: data.raterNames })
   })
 
   return avgMap

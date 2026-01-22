@@ -57,6 +57,7 @@ export default function AssignedRowsFilter({ onChange }: AssignedRowsFilterProps
         className="input"
         placeholder="e.g., 12-25,40,42-45"
         onChange={handleChange}
+        style={{ maxWidth: '180px', marginLeft: '-10px' }}
       />
       <p style={{ 
         fontSize: '0.875rem', 
