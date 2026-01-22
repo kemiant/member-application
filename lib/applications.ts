@@ -125,6 +125,7 @@ export async function getApplications(): Promise<Application[]> {
       headshotUrl: row[headshotIdx] || '',
       resumeUrl: row[resumeIdx] || '',
       majors,
+      schools: schoolIndices.map(i => row[i] || '').filter(s => s.trim()),
       primaryMajor: majors[0] || '',
       businessMinor: row[businessMinorIdx] || '',
       year: row[yearIdx] || '',

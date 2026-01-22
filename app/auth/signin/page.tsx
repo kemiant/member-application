@@ -10,16 +10,37 @@ export default function SignIn() {
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      backgroundColor: 'var(--baxa-purple-bg)'
+      background: 'linear-gradient(135deg, #f5f0ff 0%, #e9e0ff 100%)',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <div className="card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+      {/* Background pattern */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.1,
+        backgroundImage: `
+          repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(102, 51, 153, 0.3) 35px, rgba(102, 51, 153, 0.3) 70px),
+          repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(102, 51, 153, 0.3) 35px, rgba(102, 51, 153, 0.3) 70px)
+        `,
+        pointerEvents: 'none'
+      }} />
+      <div className="card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+        <img 
+          src="/baxa-logo.png" 
+          alt="BAXA Logo" 
+          style={{ height: '80px', width: 'auto', margin: '0 auto 1.5rem' }}
+        />
         <h1 style={{ 
           color: 'var(--baxa-purple-dark)', 
           marginTop: 0,
           fontSize: '2rem',
           marginBottom: '1rem'
         }}>
-          BAXA Applications
+          Applications Portal
         </h1>
         <p style={{ 
           color: 'var(--text-secondary)', 

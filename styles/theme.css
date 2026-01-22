@@ -19,9 +19,26 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   color: var(--text-primary);
-  background-color: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb 0%, #f5f0ff 100%);
+  background-attachment: fixed;
   margin: 0;
   padding: 0;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.08;
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(102, 51, 153, 0.4) 40px, rgba(102, 51, 153, 0.4) 41px),
+    repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(102, 51, 153, 0.4) 40px, rgba(102, 51, 153, 0.4) 41px);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .btn-primary {

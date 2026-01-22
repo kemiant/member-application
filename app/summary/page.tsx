@@ -218,47 +218,73 @@ export default async function SummaryPage() {
         gap: '1rem',
         marginBottom: '2rem'
       }}>
-        <div className="card">
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, rgba(102, 51, 153, 0.05) 0%, rgba(136, 85, 187, 0.08) 100%)', borderLeft: '3px solid var(--baxa-purple)', position: 'relative', overflow: 'hidden' }}>
+          <svg style={{ position: 'absolute', right: '10px', top: '10px', opacity: 0.1 }} width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#663399" strokeWidth="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem', position: 'relative', zIndex: 1 }}>
             Total Applications
           </h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
+          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)', position: 'relative', zIndex: 1 }}>
             {summary.totalApplications}
           </p>
         </div>
 
-        <div className="card">
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, rgba(102, 51, 153, 0.05) 0%, rgba(136, 85, 187, 0.08) 100%)', borderLeft: '3px solid var(--baxa-purple)', position: 'relative', overflow: 'hidden' }}>
+          <svg style={{ position: 'absolute', right: '10px', top: '10px', opacity: 0.1 }} width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#663399" strokeWidth="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem', position: 'relative', zIndex: 1 }}>
             Returning Applicants
           </h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
+          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)', position: 'relative', zIndex: 1 }}>
             {summary.returningPath}
           </p>
         </div>
 
-        <div className="card">
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, rgba(102, 51, 153, 0.05) 0%, rgba(136, 85, 187, 0.08) 100%)', borderLeft: '3px solid var(--baxa-purple)', position: 'relative', overflow: 'hidden' }}>
+          <svg style={{ position: 'absolute', right: '10px', top: '10px', opacity: 0.1 }} width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#663399" strokeWidth="1.5">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem', position: 'relative', zIndex: 1 }}>
             McCombs
           </h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
+          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)', position: 'relative', zIndex: 1 }}>
             {summary.mcCombs}
           </p>
         </div>
 
-        <div className="card">
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, rgba(102, 51, 153, 0.05) 0%, rgba(136, 85, 187, 0.08) 100%)', borderLeft: '3px solid var(--baxa-purple)', position: 'relative', overflow: 'hidden' }}>
+          <svg style={{ position: 'absolute', right: '10px', top: '10px', opacity: 0.1 }} width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#663399" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem', position: 'relative', zIndex: 1 }}>
             Non-McCombs
           </h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
+          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)', position: 'relative', zIndex: 1 }}>
             {summary.nonMcCombs}
           </p>
         </div>
 
-        <div className="card">
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, rgba(102, 51, 153, 0.05) 0%, rgba(136, 85, 187, 0.08) 100%)', borderLeft: '3px solid var(--baxa-purple)', position: 'relative', overflow: 'hidden' }}>
+          <svg style={{ position: 'absolute', right: '10px', top: '10px', opacity: 0.1 }} width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#663399" strokeWidth="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            <polyline points="17 11 19 13 23 9"></polyline>
+          </svg>
+          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem', position: 'relative', zIndex: 1 }}>
             Previous Members
           </h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
+          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)', position: 'relative', zIndex: 1 }}>
             {summary.previousMembers}
           </p>
         </div>

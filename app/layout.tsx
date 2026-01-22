@@ -4,6 +4,9 @@ import '@/styles/theme.css'
 export const metadata: Metadata = {
   title: 'BAXA Member Applications',
   description: 'Review and rate BAXA member applications',
+  icons: {
+    icon: '/favicon.png',
+  },
 }
 
 export default function RootLayout({

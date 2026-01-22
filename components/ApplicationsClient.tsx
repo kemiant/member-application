@@ -6,6 +6,7 @@ import ApplicationCard from '@/components/ApplicationCard'
 import RaterNameGate from '@/components/RaterNameGate'
 import AssignedRowsFilter, { parseAssignedRows } from '@/components/AssignedRowsFilter'
 import Navigation from '@/components/Navigation'
+import EmptyState from '@/components/EmptyState'
 
 interface Application {
   eid: string
@@ -16,6 +17,8 @@ interface Application {
   email: string
   year: string
   primaryMajor: string
+  majors?: string[]
+  schools?: string[]
   isMcCombs: boolean
   previouslyMember: string
   appliedBefore: string
@@ -36,6 +39,7 @@ interface Application {
   isReturningPath: boolean
   avgRating: number | null
   ratingsCount: number
+  infoSessionsAttended: number
 }
 
 export default function ApplicationsClient() {
@@ -99,9 +103,11 @@ export default function ApplicationsClient() {
       filtered = filtered.filter(app => app.year === yearFilter)
     }
 
-    // Major filter
+    // School filter
     if (majorFilter) {
-      filtered = filtered.filter(app => app.primaryMajor === majorFilter)
+      filtered = filtered.filter(app => 
+        app.schools && app.schools.some(school => school === majorFilter)
+      )
     }
 
     // EID filter
@@ -150,9 +156,15 @@ export default function ApplicationsClient() {
     fetchApplications()
   }
 
-  // Get unique years and majors for filters
+  // Get unique years and schools for filters
   const years = Array.from(new Set(applications.map(app => app.year))).sort()
-  const majors = Array.from(new Set(applications.map(app => app.primaryMajor))).filter(Boolean).sort()
+  const schools = Array.from(
+    new Set(
+      applications
+        .flatMap(app => app.schools || [])
+        .filter(school => school && school.trim() && school.toLowerCase() !== 'n/a')
+    )
+  ).sort()
 
   if (loading) {
     return (
@@ -223,7 +235,7 @@ export default function ApplicationsClient() {
 
               <div>
                 <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>
-                  Major
+                  School
                 </label>
                 <select 
                   className="select"
@@ -231,9 +243,9 @@ export default function ApplicationsClient() {
                   onChange={(e) => setMajorFilter(e.target.value)}
                   style={{ width: '100%' }}
                 >
-                  <option value="">All Majors</option>
-                  {majors.map(major => (
-                    <option key={major} value={major}>{major}</option>
+                  <option value="">All Schools</option>
+                  {schools.map(school => (
+                    <option key={school} value={school}>{school}</option>
                   ))}
                 </select>
               </div>
@@ -299,11 +311,7 @@ export default function ApplicationsClient() {
           </div>
 
           {filteredApps.length === 0 && (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
-                No applications match your filters
-              </p>
-            </div>
+            <EmptyState message="No applications match your filters" />
           )}
         </>
       )}

@@ -8,10 +8,10 @@ export default function Navigation() {
 
   return (
     <nav style={{
-      backgroundColor: 'var(--baxa-purple)',
+      background: 'linear-gradient(135deg, #663399 0%, #8855bb 100%)',
       padding: '1rem 2rem',
       marginBottom: '2rem',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      boxShadow: '0 2px 8px rgba(102, 51, 153, 0.3)'
     }}>
       <div style={{
         maxWidth: '1400px',
@@ -20,14 +20,21 @@ export default function Navigation() {
         gap: '2rem',
         alignItems: 'center'
       }}>
-        <h1 style={{
-          margin: 0,
-          color: 'white',
-          fontSize: '1.5rem',
-          fontWeight: 600
-        }}>
-          BAXA Applications
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <img 
+            src="/baxa-logo-white.png" 
+            alt="BAXA Logo" 
+            style={{ height: '105px', width: 'auto' }}
+          />
+          <h1 style={{
+            margin: 0,
+            color: 'white',
+            fontSize: '1.5rem',
+            fontWeight: 600
+          }}>
+            Applications
+          </h1>
+        </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Link
             href="/applications"
@@ -58,6 +65,21 @@ export default function Navigation() {
             }}
           >
             Summary
+          </Link>
+          <Link
+            href="/faq"
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '0.375rem',
+              textDecoration: 'none',
+              fontWeight: 500,
+              backgroundColor: pathname === '/faq' ? 'white' : 'transparent',
+              color: pathname === '/faq' ? 'var(--baxa-purple)' : 'white',
+              border: pathname === '/faq' ? 'none' : '1px solid white',
+              transition: 'all 0.2s'
+            }}
+          >
+            FAQ
           </Link>
         </div>
       </div>

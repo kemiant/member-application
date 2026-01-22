@@ -10,6 +10,8 @@ interface Application {
   email: string
   year: string
   primaryMajor: string
+  majors?: string[]
+  schools?: string[]
   isMcCombs: boolean
   previouslyMember: string
   appliedBefore: string
@@ -104,30 +106,72 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
                 cursor: 'pointer',
                 fontSize: '0.75rem',
                 fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
               }}
             >
-              {showName ? '🔒 Hide' : '👁️ Reveal'}
+              {showName ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="2"></line>
+                  </svg>
+                  Hide
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  Reveal
+                </>
+              )}
             </button>
+            {application.avgRating !== null && (
+              <span style={{
+                backgroundColor: '#10b981',
+                color: 'white',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+              }}>
+                ✓ Rated
+              </span>
+            )}
           </div>
           {notConsidered && (
             <span style={{
               backgroundColor: '#ef4444',
               color: 'white',
-              padding: '0.25rem 0.75rem',
+              padding: '0.25rem 0.5rem',
               borderRadius: '0.375rem',
-              fontSize: '0.875rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              textAlign: 'center',
+              lineHeight: '1.2',
             }}>
-              NOT CONSIDERED
+              🔴 NOT<br/>CONSIDERED
             </span>
           )}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
           <span className="badge badge-purple">Row {application.rowNumber}</span>
           <span className="badge badge-purple">{application.year}</span>
-          <span className="badge badge-purple">{application.primaryMajor}</span>
-          {application.isMcCombs && (
-            <span className="badge badge-success">McCombs</span>
+          {application.schools && application.schools.length > 0 && application.schools[0] && 
+           application.schools[0].trim() && application.schools[0].toLowerCase() !== 'n/a' && (
+            <span className="badge" style={{ backgroundColor: '#f59e0b', color: 'white' }}>
+              {application.schools[0]}
+            </span>
           )}
           {application.isReturningPath && (
             <span className="badge badge-warning">Returning</span>
@@ -164,15 +208,47 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
         </p>
         {application.headshotUrl && (
           <p style={{ margin: '0.25rem 0' }}>
-            <a href={application.headshotUrl} target="_blank" rel="noopener noreferrer" className="link">
-              📸 View Headshot
+            <a 
+              href={application.headshotUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="link"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              View Headshot
             </a>
           </p>
         )}
         {application.resumeUrl && (
           <p style={{ margin: '0.25rem 0' }}>
-            <a href={application.resumeUrl} target="_blank" rel="noopener noreferrer" className="link">
-              📄 View Resume
+            <a 
+              href={application.resumeUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="link"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              View Resume
             </a>
           </p>
         )}
