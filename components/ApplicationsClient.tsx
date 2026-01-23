@@ -304,7 +304,7 @@ export default function ApplicationsClient() {
           }}>
             {filteredApps.map(app => (
               <ApplicationCard
-                key={app.eid}
+                key={`${app.eid}-${app.rowNumber}`}
                 application={app}
                 onRate={handleRate}
               />

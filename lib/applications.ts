@@ -150,4 +150,19 @@ export async function getApplications(): Promise<Application[]> {
       coffeeChatCount: 0, // Will be enriched from coffee chat sign-in sheet
     }
   })
+
+  // Remove duplicates by keeping only the latest submission for each EID (case-insensitive)
+  const uniqueApplications = new Map<string, typeof applications[0]>()
+  
+  applications.forEach(app => {
+    const normalizedEid = app.eid.toLowerCase().trim()
+    const existing = uniqueApplications.get(normalizedEid)
+    
+    // Keep the application with the latest timestamp
+    if (!existing || new Date(app.timestamp) > new Date(existing.timestamp)) {
+      uniqueApplications.set(normalizedEid, app)
+    }
+  })
+
+  return Array.from(uniqueApplications.values())
 }
