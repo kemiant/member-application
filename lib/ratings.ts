@@ -61,7 +61,7 @@ export async function getRatingsAvgMap(): Promise<Map<string, RatingStats>> {
   const ratingsByEid = new Map<string, { ratings: number[], raterNames: string[] }>()
   
   rows.forEach(row => {
-    const eid = row[0]
+    const eid = (row[0] || '').toLowerCase().trim()
     const raterName = row[1]
     const rating = parseFloat(row[2])
     

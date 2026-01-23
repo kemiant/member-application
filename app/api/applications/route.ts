@@ -23,12 +23,15 @@ export async function GET() {
     const attendanceCounts = await getInfoMeetingAttendanceCounts()
 
     // Enrich applications with rating data and attendance count
-    const enrichedApplications = applications.map(app => ({
-      ...app,
-      avgRating: ratingsMap.get(app.eid)?.avg || null,
-      ratingsCount: ratingsMap.get(app.eid)?.count || 0,
-      infoSessionsAttended: attendanceCounts.get(app.eid.toLowerCase().trim()) || 0,
-    }))
+    const enrichedApplications = applications.map(app => {
+      const normalizedEid = app.eid.toLowerCase().trim()
+      return {
+        ...app,
+        avgRating: ratingsMap.get(normalizedEid)?.avg || null,
+        ratingsCount: ratingsMap.get(normalizedEid)?.count || 0,
+        infoSessionsAttended: attendanceCounts.get(normalizedEid) || 0,
+      }
+    })
 
     // Sort by timestamp ascending (oldest first)
     enrichedApplications.sort((a, b) => 
