@@ -308,99 +308,13 @@ export default async function SummaryPage() {
         </div>
       </div>
 
-      {/* Top 60 Breakdown */}
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--baxa-purple-dark)' }}>
-          Top 60 Rated Applicants - Breakdown
-        </h2>
-        
-        {/* School Breakdown */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--baxa-purple)', marginBottom: '0.75rem' }}>
-            By School
-          </h3>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '0.75rem'
-          }}>
-            <div style={{ 
-              padding: '0.75rem', 
-              backgroundColor: 'var(--baxa-purple-bg)', 
-              borderRadius: '0.375rem',
-              borderLeft: '3px solid var(--success)'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                McCombs
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--success)' }}>
-                {summary.top60McCombs}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                {summary.top60McCombs > 0 ? `${((summary.top60McCombs / Math.min(60, summary.topRated.length)) * 100).toFixed(1)}%` : '0%'}
-              </div>
-            </div>
-            <div style={{ 
-              padding: '0.75rem', 
-              backgroundColor: 'var(--baxa-purple-bg)', 
-              borderRadius: '0.375rem',
-              borderLeft: '3px solid var(--baxa-purple)'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                Non-McCombs
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
-                {summary.top60NonMcCombs}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                {summary.top60NonMcCombs > 0 ? `${((summary.top60NonMcCombs / Math.min(60, summary.topRated.length)) * 100).toFixed(1)}%` : '0%'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Year Breakdown */}
-        <div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--baxa-purple)', marginBottom: '0.75rem' }}>
-            By Academic Level
-          </h3>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-            gap: '0.75rem'
-          }}>
-            {Object.entries(summary.top60ByYear)
-              .sort((a, b) => {
-                const yearOrder: Record<string, number> = { 'Freshman': 1, 'Sophomore': 2, 'Junior': 3, 'Senior': 4, 'Graduate': 5 }
-                return (yearOrder[a[0]] || 999) - (yearOrder[b[0]] || 999)
-              })
-              .map(([year, count]) => (
-                <div 
-                  key={year}
-                  style={{ 
-                    padding: '0.75rem', 
-                    backgroundColor: 'var(--baxa-purple-bg)', 
-                    borderRadius: '0.375rem',
-                    borderLeft: '3px solid var(--baxa-purple-light)'
-                  }}
-                >
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                    {year}
-                  </div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--baxa-purple-dark)' }}>
-                    {count}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    {((count / Math.min(60, summary.topRated.length)) * 100).toFixed(1)}%
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
-
       {/* Top 60 Rated Section */}
-      <TopRatedSection topRated={summary.topRated} />
+      <TopRatedSection 
+        topRated={summary.topRated} 
+        top60McCombs={summary.top60McCombs}
+        top60NonMcCombs={summary.top60NonMcCombs}
+        top60ByYear={summary.top60ByYear}
+      />
 
       {/* Top Rated */}
       <div className="card" style={{ marginBottom: '2rem' }}>

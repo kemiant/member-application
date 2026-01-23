@@ -23,9 +23,12 @@ interface TopRatedApp {
 
 interface TopRatedSectionProps {
   topRated: TopRatedApp[]
+  top60McCombs: number
+  top60NonMcCombs: number
+  top60ByYear: Record<string, number>
 }
 
-export default function TopRatedSection({ topRated }: TopRatedSectionProps) {
+export default function TopRatedSection({ topRated, top60McCombs, top60NonMcCombs, top60ByYear }: TopRatedSectionProps) {
   const [copied, setCopied] = useState(false)
   const [selectedEid, setSelectedEid] = useState<string | null>(null)
 
@@ -38,6 +41,8 @@ export default function TopRatedSection({ topRated }: TopRatedSectionProps) {
       setTimeout(() => setCopied(false), 2000)
     })
   }
+
+  const top60Count = Math.min(60, topRated.length)
 
   return (
     <div className="card" style={{ marginBottom: '2rem' }}>
@@ -67,6 +72,89 @@ export default function TopRatedSection({ topRated }: TopRatedSectionProps) {
           </button>
         )}
       </div>
+
+      {/* Compact Breakdown Stats */}
+      {top60Count > 0 && (
+        <div style={{ 
+          marginBottom: '1.5rem', 
+          padding: '0.75rem', 
+          backgroundColor: '#faf9fc', 
+          borderRadius: '0.375rem',
+          border: '1px solid var(--baxa-purple-light)'
+        }}>
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {/* School Stats */}
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>School:</span>
+              <div style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                padding: '0.25rem 0.5rem',
+                backgroundColor: 'white',
+                borderRadius: '0.25rem',
+                borderLeft: '2px solid var(--success)'
+              }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>McCombs:</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--success)' }}>
+                  {top60McCombs}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  ({((top60McCombs / top60Count) * 100).toFixed(0)}%)
+                </span>
+              </div>
+              <div style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                padding: '0.25rem 0.5rem',
+                backgroundColor: 'white',
+                borderRadius: '0.25rem',
+                borderLeft: '2px solid var(--baxa-purple)'
+              }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Other:</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
+                  {top60NonMcCombs}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  ({((top60NonMcCombs / top60Count) * 100).toFixed(0)}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Year Stats */}
+            {Object.keys(top60ByYear).length > 0 && (
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Year:</span>
+                {Object.entries(top60ByYear)
+                  .sort((a, b) => {
+                    const yearOrder: Record<string, number> = { 'Freshman': 1, 'Sophomore': 2, 'Junior': 3, 'Senior': 4, 'Graduate': 5 }
+                    return (yearOrder[a[0]] || 999) - (yearOrder[b[0]] || 999)
+                  })
+                  .map(([year, count]) => (
+                    <div 
+                      key={year}
+                      style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.25rem',
+                        padding: '0.25rem 0.5rem',
+                        backgroundColor: 'white',
+                        borderRadius: '0.25rem',
+                        borderLeft: '2px solid var(--baxa-purple-light)'
+                      }}
+                    >
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{year.slice(0, 4)}:</span>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--baxa-purple-dark)' }}>
+                        {count}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       
       {topRated.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)' }}>No rated applications yet</p>
