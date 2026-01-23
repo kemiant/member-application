@@ -40,6 +40,7 @@ interface Application {
   avgRating: number | null
   ratingsCount: number
   infoSessionsAttended: number
+  coffeeChatCount: number
 }
 
 export default function ApplicationsClient() {

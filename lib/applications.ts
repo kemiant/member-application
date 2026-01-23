@@ -30,6 +30,7 @@ export interface Application {
   isReturningPath: boolean
   isMcCombs: boolean
   infoSessionsAttended: number
+  coffeeChatCount: number
 }
 
 // The exact resume header from Google Forms
@@ -146,6 +147,7 @@ export async function getApplications(): Promise<Application[]> {
       isReturningPath,
       isMcCombs,
       infoSessionsAttended: 0, // Will be enriched from actual sign-in sheet
+      coffeeChatCount: 0, // Will be enriched from coffee chat sign-in sheet
     }
   })
 }

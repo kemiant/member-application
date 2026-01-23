@@ -33,6 +33,7 @@ interface Application {
   avgRating: number | null
   ratingsCount: number
   infoSessionsAttended: number
+  coffeeChatCount: number
 }
 
 interface ApplicationCardProps {
@@ -137,6 +138,11 @@ export default function ApplicationCard({ application, onRate }: ApplicationCard
             className={application.infoSessionsAttended > 0 ? "badge badge-info-sessions-positive" : "badge badge-info-sessions-zero"}
           >
             Info Sessions: {application.infoSessionsAttended}
+          </span>
+          <span 
+            className={application.coffeeChatCount > 0 ? "badge badge-info-sessions-positive" : "badge badge-info-sessions-zero"}
+          >
+            Coffee Chats: {application.coffeeChatCount}
           </span>
           {application.avgRating !== null && (
             <span className="badge badge-success">

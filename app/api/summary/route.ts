@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { getApplications } from '@/lib/applications'
 import { getRatingsAvgMap } from '@/lib/ratings'
 import { getInfoMeetingAttendanceCounts } from '@/lib/infoMeeting'
+import { getCoffeeChatAttendanceCounts } from '@/lib/coffeeChat'
 
 interface SummaryData {
   totalApplications: number
@@ -69,6 +70,7 @@ export async function GET() {
     const applications = await getApplications()
     const ratingsMap = await getRatingsAvgMap()
     const attendanceCounts = await getInfoMeetingAttendanceCounts()
+    const coffeeChatCounts = await getCoffeeChatAttendanceCounts()
 
     // Enrich applications with ratings and info session attendance
     const enrichedApps = applications.map(app => {
@@ -79,6 +81,7 @@ export async function GET() {
         ratingsCount: ratingsMap.get(normalizedEid)?.count || 0,
         raterNames: ratingsMap.get(normalizedEid)?.raterNames || [],
         infoSessionsAttended: attendanceCounts.get(normalizedEid) || 0,
+        coffeeChatCount: coffeeChatCounts.get(normalizedEid) || 0,
       }
     })
 

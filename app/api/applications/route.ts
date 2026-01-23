@@ -5,6 +5,7 @@ import { ensureRatingsSheet } from '@/lib/sheets'
 import { getApplications } from '@/lib/applications'
 import { getRatingsAvgMap } from '@/lib/ratings'
 import { getInfoMeetingAttendanceCounts } from '@/lib/infoMeeting'
+import { getCoffeeChatAttendanceCounts } from '@/lib/coffeeChat'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -21,6 +22,7 @@ export async function GET() {
     const applications = await getApplications()
     const ratingsMap = await getRatingsAvgMap()
     const attendanceCounts = await getInfoMeetingAttendanceCounts()
+    const coffeeChatCounts = await getCoffeeChatAttendanceCounts()
 
     // Enrich applications with rating data and attendance count
     const enrichedApplications = applications.map(app => {
@@ -30,6 +32,7 @@ export async function GET() {
         avgRating: ratingsMap.get(normalizedEid)?.avg || null,
         ratingsCount: ratingsMap.get(normalizedEid)?.count || 0,
         infoSessionsAttended: attendanceCounts.get(normalizedEid) || 0,
+        coffeeChatCount: coffeeChatCounts.get(normalizedEid) || 0,
       }
     })
 
