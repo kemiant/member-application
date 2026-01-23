@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     await appendRating({
-      eid,
+      eid: eid.toLowerCase().trim(),
       raterName,
       rating,
       comment: comment || '',

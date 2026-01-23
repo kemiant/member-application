@@ -75,7 +75,6 @@ export async function getApplications(): Promise<Application[]> {
   const lunchIdx = getColIndex(/lunch/i)
   const timeCommitmentsIdx = getColIndex(/time.*commitment/i)
   const anythingElseIdx = getColIndex(/anything.*else/i)
-  const infoSessionsIdx = getColIndex(/info.*session|coffee.*chat/i)
 
   // Find major columns
   const majorIndices: number[] = []
@@ -146,7 +145,7 @@ export async function getApplications(): Promise<Application[]> {
       anythingElse: row[anythingElseIdx] || '',
       isReturningPath,
       isMcCombs,
-      infoSessionsAttended: parseInt(row[infoSessionsIdx]) || 0,
+      infoSessionsAttended: 0, // Will be enriched from actual sign-in sheet
     }
   })
 }
