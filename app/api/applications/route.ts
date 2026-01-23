@@ -27,10 +27,12 @@ export async function GET() {
     // Enrich applications with rating data and attendance count
     const enrichedApplications = applications.map(app => {
       const normalizedEid = app.eid.toLowerCase().trim()
+      const ratingStats = ratingsMap.get(normalizedEid)
       return {
         ...app,
-        avgRating: ratingsMap.get(normalizedEid)?.avg || null,
-        ratingsCount: ratingsMap.get(normalizedEid)?.count || 0,
+        avgRating: ratingStats?.avg || null,
+        ratingsCount: ratingStats?.count || 0,
+        comments: ratingStats?.comments || [],
         infoSessionsAttended: attendanceCounts.get(normalizedEid) || 0,
         coffeeChatCount: coffeeChatCounts.get(normalizedEid) || 0,
       }

@@ -32,6 +32,7 @@ interface Application {
   avgRating: number | null
   ratingsCount: number
   infoSessionsAttended: number
+  comments?: Array<{ raterName: string; rating: number; comment: string; timestamp: string }>
 }
 
 interface ApplicationModalProps {
@@ -364,6 +365,35 @@ export default function ApplicationModal({ eid, onClose }: ApplicationModalProps
                 </div>
               )}
             </div>
+
+            {/* Comments Section */}
+            {application.comments && application.comments.length > 0 && (
+              <div className="modal-comments-section">
+                <h4 className="comments-section-title">
+                  Rating Comments ({application.comments.length})
+                </h4>
+                <div className="comments-list">
+                  {application.comments.map((c, idx) => (
+                    <div key={idx} className="comment-card">
+                      <div className="comment-card-header">
+                        <strong className="comment-card-rater-name">{c.raterName}</strong>
+                        <span className="badge badge-purple">Rating: {c.rating}</span>
+                      </div>
+                      {c.comment && (
+                        <p className="comment-card-text-wrap">
+                          {c.comment}
+                        </p>
+                      )}
+                      {!c.comment && (
+                        <p className="comment-card-text-empty">
+                          No comment provided
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

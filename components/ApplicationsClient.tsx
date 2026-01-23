@@ -41,6 +41,7 @@ interface Application {
   ratingsCount: number
   infoSessionsAttended: number
   coffeeChatCount: number
+  comments?: Array<{ raterName: string; rating: number; comment: string; timestamp: string }>
 }
 
 export default function ApplicationsClient() {

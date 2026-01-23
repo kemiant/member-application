@@ -17,6 +17,8 @@ interface SummaryData {
   nonMcCombs: number
   previousMembers: number
   top60McCombs: number
+  top60NonMcCombs: number
+  top60ByYear: Record<string, number>
   topRated: Array<{
     eid: string
     firstName: string
@@ -76,13 +78,18 @@ export default async function SummaryPage() {
   const attendanceCounts = await getInfoMeetingAttendanceCounts()
 
   // Enrich applications with ratings and info session attendance
-  const enrichedApps = applications.map(app => ({
-    ...app,
-    avgRating: ratingsMap.get(app.eid)?.avg || null,
-    ratingsCount: ratingsMap.get(app.eid)?.count || 0,
-    raterNames: ratingsMap.get(app.eid)?.raterNames || [],
-    infoSessionsAttended: attendanceCounts.get(app.eid) || 0,
-  }))
+  const enrichedApps = applications.map(app => {
+    const normalizedEid = app.eid.toLowerCase().trim()
+    const ratingStats = ratingsMap.get(normalizedEid)
+    return {
+      ...app,
+      avgRating: ratingStats?.avg || null,
+      ratingsCount: ratingStats?.count || 0,
+      raterNames: ratingStats?.raterNames || [],
+      comments: ratingStats?.comments || [],
+      infoSessionsAttended: attendanceCounts.get(normalizedEid) || 0,
+    }
+  })
 
   // Calculate aggregations
   const byPrimaryMajor: Record<string, number> = {}
@@ -161,6 +168,15 @@ export default async function SummaryPage() {
   // Calculate how many of top 60 are McCombs
   const top60 = topRated.slice(0, 60)
   const top60McCombs = top60.filter(app => app.isMcCombs).length
+  const top60NonMcCombs = top60.length - top60McCombs
+
+  // Calculate top 60 by year
+  const top60ByYear: Record<string, number> = {}
+  top60.forEach(app => {
+    if (app.year) {
+      top60ByYear[app.year] = (top60ByYear[app.year] || 0) + 1
+    }
+  })
 
   // Get all applications sorted by rating (with unrated at the end)
   const allRatings = enrichedApps
@@ -194,6 +210,8 @@ export default async function SummaryPage() {
     nonMcCombs,
     previousMembers,
     top60McCombs,
+    top60NonMcCombs,
+    top60ByYear,
     topRated,
     allRatings,
     previousMembersList,
@@ -287,6 +305,97 @@ export default async function SummaryPage() {
           <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)', position: 'relative', zIndex: 1 }}>
             {summary.previousMembers}
           </p>
+        </div>
+      </div>
+
+      {/* Top 60 Breakdown */}
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--baxa-purple-dark)' }}>
+          Top 60 Rated Applicants - Breakdown
+        </h2>
+        
+        {/* School Breakdown */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--baxa-purple)', marginBottom: '0.75rem' }}>
+            By School
+          </h3>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+            gap: '0.75rem'
+          }}>
+            <div style={{ 
+              padding: '0.75rem', 
+              backgroundColor: 'var(--baxa-purple-bg)', 
+              borderRadius: '0.375rem',
+              borderLeft: '3px solid var(--success)'
+            }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                McCombs
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--success)' }}>
+                {summary.top60McCombs}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                {summary.top60McCombs > 0 ? `${((summary.top60McCombs / Math.min(60, summary.topRated.length)) * 100).toFixed(1)}%` : '0%'}
+              </div>
+            </div>
+            <div style={{ 
+              padding: '0.75rem', 
+              backgroundColor: 'var(--baxa-purple-bg)', 
+              borderRadius: '0.375rem',
+              borderLeft: '3px solid var(--baxa-purple)'
+            }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                Non-McCombs
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
+                {summary.top60NonMcCombs}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                {summary.top60NonMcCombs > 0 ? `${((summary.top60NonMcCombs / Math.min(60, summary.topRated.length)) * 100).toFixed(1)}%` : '0%'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Year Breakdown */}
+        <div>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--baxa-purple)', marginBottom: '0.75rem' }}>
+            By Academic Level
+          </h3>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+            gap: '0.75rem'
+          }}>
+            {Object.entries(summary.top60ByYear)
+              .sort((a, b) => {
+                const yearOrder: Record<string, number> = { 'Freshman': 1, 'Sophomore': 2, 'Junior': 3, 'Senior': 4, 'Graduate': 5 }
+                return (yearOrder[a[0]] || 999) - (yearOrder[b[0]] || 999)
+              })
+              .map(([year, count]) => (
+                <div 
+                  key={year}
+                  style={{ 
+                    padding: '0.75rem', 
+                    backgroundColor: 'var(--baxa-purple-bg)', 
+                    borderRadius: '0.375rem',
+                    borderLeft: '3px solid var(--baxa-purple-light)'
+                  }}
+                >
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                    {year}
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--baxa-purple-dark)' }}>
+                    {count}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    {((count / Math.min(60, summary.topRated.length)) * 100).toFixed(1)}%
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
       </div>
 
