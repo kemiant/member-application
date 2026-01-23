@@ -76,7 +76,7 @@ export async function GET() {
       avgRating: ratingsMap.get(app.eid)?.avg || null,
       ratingsCount: ratingsMap.get(app.eid)?.count || 0,
       raterNames: ratingsMap.get(app.eid)?.raterNames || [],
-      infoSessionsAttended: attendanceCounts.get(app.eid) || 0,
+      infoSessionsAttended: attendanceCounts.get(app.eid.toLowerCase().trim()) || 0,
     }))
 
     // Calculate aggregations

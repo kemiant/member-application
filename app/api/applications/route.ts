@@ -27,7 +27,7 @@ export async function GET() {
       ...app,
       avgRating: ratingsMap.get(app.eid)?.avg || null,
       ratingsCount: ratingsMap.get(app.eid)?.count || 0,
-      infoSessionsAttended: attendanceCounts.get(app.eid) || 0,
+      infoSessionsAttended: attendanceCounts.get(app.eid.toLowerCase().trim()) || 0,
     }))
 
     // Sort by timestamp ascending (oldest first)

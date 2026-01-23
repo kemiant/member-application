@@ -51,7 +51,7 @@ export async function getInfoMeetingAttendees(): Promise<InfoMeetingAttendee[]> 
 
     return dataRows
       .map((row) => ({
-        eid: row[eidIdx] || '',
+        eid: (row[eidIdx] || '').toLowerCase().trim(),
         timestamp: row[timestampIdx] || '',
         firstName: row[firstNameIdx] || '',
         lastName: row[lastNameIdx] || '',
