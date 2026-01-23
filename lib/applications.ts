@@ -104,7 +104,7 @@ export async function getApplications(): Promise<Application[]> {
   const newEssay2Idx = getColIndex(/Tell us about yourself!|Tell us about yourself(?!.*returning)/i)
   const newEssay3Idx = getColIndex(/new.*3/i)
 
-  return dataRows.map((row, index) => {
+  const applications = dataRows.map((row, index) => {
     const majors = majorIndices.map(i => row[i] || '').filter(m => m.trim())
     const schools = schoolIndices.map(i => (row[i] || '').toLowerCase())
     
