@@ -101,7 +101,15 @@ export async function getApplications(): Promise<Application[]> {
 
   // Find new member essays
   const newEssay1Idx = getColIndex(/Why do you want to be a part of BAXA/i)
-  const newEssay2Idx = getColIndex(/Tell us about yourself!|Tell us about yourself(?!.*returning)/i)
+  
+  // Find ALL "Tell us about yourself" columns (there may be 2 with the same name)
+  const tellUsAboutYourselfIndices: number[] = []
+  headers.forEach((h, i) => {
+    if (/Tell us about yourself[!]?(?!.*returning)/i.test(h)) {
+      tellUsAboutYourselfIndices.push(i)
+    }
+  })
+  
   const newEssay3Idx = getColIndex(/new.*3/i)
 
   const applications = dataRows.map((row, index) => {
@@ -115,6 +123,15 @@ export async function getApplications(): Promise<Application[]> {
     
     const isReturningPath = !!(returningEssay1 || returningEssay2 || returningFavoriteMemory || returningReEngage)
     const isMcCombs = schools.some(s => s.includes('mccombs'))
+
+    // Handle multiple "Tell us about yourself" columns
+    // If 2nd column is empty, fall back to 1st column
+    let newEssay2 = ''
+    if (tellUsAboutYourselfIndices.length >= 2) {
+      newEssay2 = row[tellUsAboutYourselfIndices[1]] || row[tellUsAboutYourselfIndices[0]] || ''
+    } else if (tellUsAboutYourselfIndices.length === 1) {
+      newEssay2 = row[tellUsAboutYourselfIndices[0]] || ''
+    }
 
     return {
       eid: row[eidIdx] || '',
@@ -137,7 +154,7 @@ export async function getApplications(): Promise<Application[]> {
       returningFavoriteMemory,
       returningReEngage,
       newEssay1: row[newEssay1Idx] || '',
-      newEssay2: row[newEssay2Idx] || '',
+      newEssay2,
       newEssay3: row[newEssay3Idx] || '',
       events: row[eventsIdx] || '',
       analyticsExperience: row[analyticsExpIdx] || '',
