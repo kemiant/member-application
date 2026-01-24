@@ -16,6 +16,7 @@ interface TopRatedApp {
   ratingsCount: number
   raterNames: string[]
   infoSessionsAttended: number
+  coffeeChatCount: number
   rowNumber: number
   previouslyMember: string
   appliedBefore: string
@@ -31,10 +32,17 @@ interface TopRatedSectionProps {
 export default function TopRatedSection({ topRated, top60McCombs, top60NonMcCombs, top60ByYear }: TopRatedSectionProps) {
   const [copied, setCopied] = useState(false)
   const [selectedEid, setSelectedEid] = useState<string | null>(null)
+  const [filterType, setFilterType] = useState<'top' | 'minimum'>('top')
+  const [topN, setTopN] = useState(60)
+  const [minimumScore, setMinimumScore] = useState(3.0)
 
-  const copyTop60Emails = () => {
-    const top60 = topRated.slice(0, 60)
-    const emails = top60.map(app => app.email).join(', ')
+  // Filter based on selected filter type
+  const filteredApps = filterType === 'top' 
+    ? topRated.slice(0, topN)
+    : topRated.filter(app => app.avgRating >= minimumScore)
+
+  const copyFilteredEmails = () => {
+    const emails = filteredApps.map(app => app.email).join(', ')
     
     navigator.clipboard.writeText(emails).then(() => {
       setCopied(true)
@@ -42,17 +50,25 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
     })
   }
 
-  const top60Count = Math.min(60, topRated.length)
+  // Calculate stats for filtered apps
+  const filteredMcCombs = filteredApps.filter(app => app.isMcCombs).length
+  const filteredNonMcCombs = filteredApps.length - filteredMcCombs
+  const filteredByYear: Record<string, number> = {}
+  filteredApps.forEach(app => {
+    if (app.year) {
+      filteredByYear[app.year] = (filteredByYear[app.year] || 0) + 1
+    }
+  })
 
   return (
     <div className="card" style={{ marginBottom: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2 style={{ margin: 0, color: 'var(--baxa-purple-dark)' }}>
-          Top 60 Rated Applicants
+          Top Rated Applicants ({filteredApps.length})
         </h2>
         {topRated.length > 0 && (
           <button
-            onClick={copyTop60Emails}
+            onClick={copyFilteredEmails}
             style={{
               backgroundColor: copied ? '#10b981' : 'var(--baxa-purple)',
               color: 'white',
@@ -68,13 +84,83 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
               transition: 'all 0.2s'
             }}
           >
-            {copied ? '✓ Copied!' : '📋 Copy Top 60 Emails'}
+            {copied ? '✓ Copied!' : `📋 Copy ${filteredApps.length} Emails`}
           </button>
         )}
       </div>
 
+      {/* Filter Controls */}
+      <div style={{ 
+        marginBottom: '1.5rem', 
+        padding: '1rem', 
+        backgroundColor: '#f9fafb', 
+        borderRadius: '0.375rem',
+        border: '1px solid #e5e7eb'
+      }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Filter by:</label>
+            <select 
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as 'top' | 'minimum')}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '0.375rem',
+                border: '1px solid var(--baxa-purple-light)',
+                fontSize: '0.875rem'
+              }}
+            >
+              <option value="top">Top N</option>
+              <option value="minimum">Minimum Score</option>
+            </select>
+          </div>
+
+          {filterType === 'top' ? (
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <label style={{ fontSize: '0.875rem' }}>Show top:</label>
+              <input
+                type="number"
+                min="1"
+                max={topRated.length}
+                value={topN}
+                onChange={(e) => setTopN(Math.max(1, parseInt(e.target.value) || 1))}
+                style={{
+                  width: '80px',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid var(--baxa-purple-light)',
+                  fontSize: '0.875rem'
+                }}
+              />
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                applicants
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <label style={{ fontSize: '0.875rem' }}>Min score:</label>
+              <input
+                type="number"
+                min="0"
+                max="5"
+                step="0.1"
+                value={minimumScore}
+                onChange={(e) => setMinimumScore(parseFloat(e.target.value) || 0)}
+                style={{
+                  width: '80px',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid var(--baxa-purple-light)',
+                  fontSize: '0.875rem'
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Compact Breakdown Stats */}
-      {top60Count > 0 && (
+      {filteredApps.length > 0 && (
         <div style={{ 
           marginBottom: '1.5rem', 
           padding: '0.75rem', 
@@ -97,10 +183,10 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
               }}>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>McCombs:</span>
                 <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--success)' }}>
-                  {top60McCombs}
+                  {filteredMcCombs}
                 </span>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                  ({((top60McCombs / top60Count) * 100).toFixed(0)}%)
+                  ({((filteredMcCombs / filteredApps.length) * 100).toFixed(0)}%)
                 </span>
               </div>
               <div style={{ 
@@ -114,19 +200,19 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
               }}>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Other:</span>
                 <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--baxa-purple)' }}>
-                  {top60NonMcCombs}
+                  {filteredNonMcCombs}
                 </span>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                  ({((top60NonMcCombs / top60Count) * 100).toFixed(0)}%)
+                  ({((filteredNonMcCombs / filteredApps.length) * 100).toFixed(0)}%)
                 </span>
               </div>
             </div>
 
             {/* Year Stats */}
-            {Object.keys(top60ByYear).length > 0 && (
+            {Object.keys(filteredByYear).length > 0 && (
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Year:</span>
-                {Object.entries(top60ByYear)
+                {Object.entries(filteredByYear)
                   .sort((a, b) => {
                     const yearOrder: Record<string, number> = { 'Freshman': 1, 'Sophomore': 2, 'Junior': 3, 'Senior': 4, 'Graduate': 5 }
                     return (yearOrder[a[0]] || 999) - (yearOrder[b[0]] || 999)
@@ -165,7 +251,7 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: '1rem'
           }}>
-            {topRated.slice(0, 60).map(app => (
+            {filteredApps.map(app => (
               <div
                 key={app.eid}
                 onClick={() => setSelectedEid(app.eid)}
@@ -187,12 +273,21 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
                 }}
               >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1.125rem' }}>
                     {app.firstName} {app.lastName}
                   </h3>
-                  <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    {app.primaryMajor}
+                  <p style={{ 
+                    margin: '0 0 0.5rem 0', 
+                    fontSize: '0.875rem', 
+                    color: app.primaryMajor ? (app.isMcCombs ? '#10b981' : 'var(--text-secondary)') : '#999',
+                    fontStyle: app.primaryMajor ? 'normal' : 'italic',
+                    fontWeight: app.isMcCombs ? 600 : 'normal',
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {app.primaryMajor || 'No major listed'}
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -216,7 +311,6 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span className="badge badge-purple">Row {app.rowNumber}</span>
                 <span className="badge badge-purple">{app.year}</span>
-                {app.isMcCombs && <span className="badge badge-success">McCombs</span>}
                 {app.isReturningPath && <span className="badge badge-warning">Returning</span>}
                 {app.previouslyMember === 'Yes' && <span className="badge badge-info">Previous Member</span>}
                 {app.appliedBefore === 'Yes' && <span className="badge badge-secondary">Applied Before</span>}
@@ -229,6 +323,16 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
                   }}
                 >
                   Info: {app.infoSessionsAttended}
+                </span>
+                <span 
+                  className="badge"
+                  style={{
+                    backgroundColor: app.coffeeChatCount > 0 ? '#10b981' : '#ef4444',
+                    color: 'white',
+                    fontSize: '0.75rem'
+                  }}
+                >
+                  Coffee: {app.coffeeChatCount}
                 </span>
               </div>
               </div>

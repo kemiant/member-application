@@ -53,7 +53,7 @@ export default function ApplicationsClient() {
   const [assignedRowsInput, setAssignedRowsInput] = useState('')
   
   // Filters
-  const [pathFilter, setPathFilter] = useState<'all' | 'returning' | 'new'>('all')
+  const [pathFilter, setPathFilter] = useState<'all' | 'new' | 'previous' | 'returning'>('all')
   const [yearFilter, setYearFilter] = useState('')
   const [majorFilter, setMajorFilter] = useState('')
   const [eidFilter, setEidFilter] = useState('')
@@ -94,10 +94,19 @@ export default function ApplicationsClient() {
     let filtered = [...applications]
 
     // Path filter
-    if (pathFilter === 'returning') {
-      filtered = filtered.filter(app => app.isReturningPath)
-    } else if (pathFilter === 'new') {
-      filtered = filtered.filter(app => !app.isReturningPath)
+    if (pathFilter === 'new') {
+      // New applicants: never applied before and never been a member
+      filtered = filtered.filter(app => 
+        app.appliedBefore?.toLowerCase() !== 'yes' && app.previouslyMember?.toLowerCase() !== 'yes'
+      )
+    } else if (pathFilter === 'previous') {
+      // Previous members: was actually a member before
+      filtered = filtered.filter(app => app.previouslyMember?.toLowerCase() === 'yes')
+    } else if (pathFilter === 'returning') {
+      // Returning applicants: applied before but didn't get in (not a previous member)
+      filtered = filtered.filter(app => 
+        app.appliedBefore?.toLowerCase() === 'yes' && app.previouslyMember?.toLowerCase() !== 'yes'
+      )
     }
 
     // Year filter
@@ -204,7 +213,7 @@ export default function ApplicationsClient() {
             }}>
               <div>
                 <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>
-                  Path
+                  Applicant Status
                 </label>
                 <select 
                   className="select" 
@@ -213,8 +222,9 @@ export default function ApplicationsClient() {
                   style={{ width: '100%' }}
                 >
                   <option value="all">All</option>
-                  <option value="returning">Returning</option>
-                  <option value="new">New</option>
+                  <option value="new">New Applicant</option>
+                  <option value="previous">Previous Member</option>
+                  <option value="returning">Returning Applicant</option>
                 </select>
               </div>
 

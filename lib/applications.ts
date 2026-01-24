@@ -77,7 +77,7 @@ export async function getApplications(): Promise<Application[]> {
   const timeCommitmentsIdx = getColIndex(/time.*commitment/i)
   const anythingElseIdx = getColIndex(/anything.*else/i)
 
-  // Find major columns
+  // Find major columns (captures "Major 1: What major..." and similar)
   const majorIndices: number[] = []
   headers.forEach((h, i) => {
     if (/Major \d+:.*major/i.test(h)) {
@@ -85,7 +85,8 @@ export async function getApplications(): Promise<Application[]> {
     }
   })
 
-  // Find school columns for McCombs detection
+  // Find school columns (captures "Major 1: What school are you a part of?" and similar)
+  // These are used both for school names AND for McCombs detection
   const schoolIndices: number[] = []
   headers.forEach((h, i) => {
     if (/Major \d+:.*school/i.test(h)) {
@@ -113,8 +114,13 @@ export async function getApplications(): Promise<Application[]> {
   const newEssay3Idx = getColIndex(/new.*3/i)
 
   const applications = dataRows.map((row, index) => {
-    const majors = majorIndices.map(i => row[i] || '').filter(m => m.trim())
-    const schools = schoolIndices.map(i => (row[i] || '').toLowerCase())
+    const majors = majorIndices.map(i => row[i] || '').filter(m => m.trim() && m.toLowerCase() !== 'na')
+    const schools = schoolIndices.map(i => row[i] || '').filter(s => s.trim() && s.toLowerCase() !== 'na')
+    const schoolsLower = schools.map(s => s.toLowerCase())
+    
+    // Use schools as the primary major source if majors is empty
+    // This handles the case where "Major 1: What school are you a part of?" is the main column
+    const allMajors = majors.length > 0 ? majors : schools
     
     const returningEssay1 = row[returningEssay1Idx] || ''
     const returningEssay2 = row[returningEssay2Idx] || ''
@@ -122,7 +128,7 @@ export async function getApplications(): Promise<Application[]> {
     const returningReEngage = row[returningReEngageIdx] || ''
     
     const isReturningPath = !!(returningEssay1 || returningEssay2 || returningFavoriteMemory || returningReEngage)
-    const isMcCombs = schools.some(s => s.includes('mccombs'))
+    const isMcCombs = schoolsLower.some(s => s.includes('mccombs'))
 
     // Handle multiple "Tell us about yourself" columns
     // If 2nd column is empty, fall back to 1st column
@@ -142,9 +148,9 @@ export async function getApplications(): Promise<Application[]> {
       email: row[emailIdx] || '',
       headshotUrl: row[headshotIdx] || '',
       resumeUrl: row[resumeIdx] || '',
-      majors,
-      schools: schoolIndices.map(i => row[i] || '').filter(s => s.trim()),
-      primaryMajor: majors[0] || '',
+      majors: allMajors,
+      schools,
+      primaryMajor: allMajors[0] || '',
       businessMinor: row[businessMinorIdx] || '',
       year: row[yearIdx] || '',
       previouslyMember: row[previouslyMemberIdx] || '',

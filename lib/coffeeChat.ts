@@ -25,6 +25,7 @@ export async function getCoffeeChatAttendees(): Promise<CoffeeChatAttendee[]> {
 
     const rows = response.data.values
     if (!rows || rows.length === 0) {
+      console.log('Coffee chat sheet is empty or has no data')
       return []
     }
 

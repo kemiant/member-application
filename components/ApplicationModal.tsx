@@ -179,9 +179,15 @@ export default function ApplicationModal({ eid, onClose }: ApplicationModalProps
           <div className="card-header" style={{ position: 'relative', zIndex: 2 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
               <div style={{ flex: 1 }}>
-                <h3 className="card-title" style={{ margin: 0 }}>
+                <h3 className="card-title" style={{ margin: '0 0 0.25rem 0' }}>
                   {application.firstName} {application.lastName}
                 </h3>
+                <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  {application.majors.filter(m => m && m.trim() && m.toLowerCase() !== 'na').join(', ') || 'No major listed'}
+                </p>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#999', fontFamily: 'monospace' }}>
+                  {application.eid}
+                </p>
               </div>
               <div style={{ textAlign: 'right' }}>
                 {application.avgRating !== null && (
@@ -222,25 +228,11 @@ export default function ApplicationModal({ eid, onClose }: ApplicationModalProps
             <p style={{ margin: '0.5rem 0', color: 'var(--text-secondary)' }}>
               Email: {application.email}
             </p>
-            <p style={{ margin: '0.5rem 0' }}>
-              <strong>Major(s):</strong> {application.majors.join(', ')}
-            </p>
           </div>
 
           <div className="card-body">
-            {/* Headshot & Resume */}
+            {/* Resume */}
             <div style={{ marginBottom: '1rem' }}>
-              {application.headshotUrl && (
-                <a 
-                  href={application.headshotUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="btn"
-                  style={{ marginRight: '0.5rem', marginBottom: '0.5rem' }}
-                >
-                  View Headshot
-                </a>
-              )}
               {application.resumeUrl && (
                 <a 
                   href={application.resumeUrl} 
@@ -253,6 +245,35 @@ export default function ApplicationModal({ eid, onClose }: ApplicationModalProps
                 </a>
               )}
             </div>
+
+            {/* Comments Section */}
+            {application.comments && application.comments.length > 0 && (
+              <div className="modal-comments-section" style={{ marginBottom: '1rem' }}>
+                <h4 className="comments-section-title">
+                  Rating Comments ({application.comments.length})
+                </h4>
+                <div className="comments-list">
+                  {application.comments.map((c, idx) => (
+                    <div key={idx} className="comment-card">
+                      <div className="comment-card-header">
+                        <strong className="comment-card-rater-name">{c.raterName}</strong>
+                        <span className="badge badge-purple">Rating: {c.rating}</span>
+                      </div>
+                      {c.comment && (
+                        <p className="comment-card-text-wrap">
+                          {c.comment}
+                        </p>
+                      )}
+                      {!c.comment && (
+                        <p className="comment-card-text-empty">
+                          No comment provided
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Essays Section */}
             <div style={{ marginBottom: '1rem' }}>
@@ -365,35 +386,6 @@ export default function ApplicationModal({ eid, onClose }: ApplicationModalProps
                 </div>
               )}
             </div>
-
-            {/* Comments Section */}
-            {application.comments && application.comments.length > 0 && (
-              <div className="modal-comments-section">
-                <h4 className="comments-section-title">
-                  Rating Comments ({application.comments.length})
-                </h4>
-                <div className="comments-list">
-                  {application.comments.map((c, idx) => (
-                    <div key={idx} className="comment-card">
-                      <div className="comment-card-header">
-                        <strong className="comment-card-rater-name">{c.raterName}</strong>
-                        <span className="badge badge-purple">Rating: {c.rating}</span>
-                      </div>
-                      {c.comment && (
-                        <p className="comment-card-text-wrap">
-                          {c.comment}
-                        </p>
-                      )}
-                      {!c.comment && (
-                        <p className="comment-card-text-empty">
-                          No comment provided
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -24,17 +24,20 @@ export async function GET() {
     const attendanceCounts = await getInfoMeetingAttendanceCounts()
     const coffeeChatCounts = await getCoffeeChatAttendanceCounts()
 
+
     // Enrich applications with rating data and attendance count
     const enrichedApplications = applications.map(app => {
       const normalizedEid = app.eid.toLowerCase().trim()
       const ratingStats = ratingsMap.get(normalizedEid)
+      const coffeeChatCount = coffeeChatCounts.get(normalizedEid) || 0
+      
       return {
         ...app,
         avgRating: ratingStats?.avg || null,
         ratingsCount: ratingStats?.count || 0,
         comments: ratingStats?.comments || [],
         infoSessionsAttended: attendanceCounts.get(normalizedEid) || 0,
-        coffeeChatCount: coffeeChatCounts.get(normalizedEid) || 0,
+        coffeeChatCount,
       }
     })
 

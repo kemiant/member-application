@@ -4,8 +4,10 @@ import { authOptions } from '@/lib/auth'
 import { getApplications } from '@/lib/applications'
 import { getRatingsAvgMap } from '@/lib/ratings'
 import { getInfoMeetingAttendanceCounts } from '@/lib/infoMeeting'
+import { getCoffeeChatAttendanceCounts } from '@/lib/coffeeChat'
 import Navigation from '@/components/Navigation'
 import TopRatedSection from '@/components/TopRatedSection'
+import AllApplicantsTable from '@/components/AllApplicantsTable'
 import '@/styles/theme.css'
 
 interface SummaryData {
@@ -32,6 +34,7 @@ interface SummaryData {
     ratingsCount: number
     raterNames: string[]
     infoSessionsAttended: number
+    coffeeChatCount: number
     rowNumber: number
     previouslyMember: string
     appliedBefore: string
@@ -76,6 +79,7 @@ export default async function SummaryPage() {
   const applications = await getApplications()
   const ratingsMap = await getRatingsAvgMap()
   const attendanceCounts = await getInfoMeetingAttendanceCounts()
+  const coffeeChatCounts = await getCoffeeChatAttendanceCounts()
 
   // Enrich applications with ratings and info session attendance
   const enrichedApps = applications.map(app => {
@@ -88,6 +92,7 @@ export default async function SummaryPage() {
       raterNames: ratingStats?.raterNames || [],
       comments: ratingStats?.comments || [],
       infoSessionsAttended: attendanceCounts.get(normalizedEid) || 0,
+      coffeeChatCount: coffeeChatCounts.get(normalizedEid) || 0,
     }
   })
 
@@ -160,6 +165,7 @@ export default async function SummaryPage() {
       ratingsCount: app.ratingsCount,
       raterNames: app.raterNames,
       infoSessionsAttended: app.infoSessionsAttended,
+      coffeeChatCount: app.coffeeChatCount,
       rowNumber: app.rowNumber,
       previouslyMember: app.previouslyMember,
       appliedBefore: app.appliedBefore,
@@ -324,90 +330,7 @@ export default async function SummaryPage() {
         {summary.allRatings.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)' }}>No applications found</p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ 
-              width: '100%', 
-              borderCollapse: 'collapse',
-              fontSize: '0.875rem'
-            }}>
-              <thead>
-                <tr style={{ 
-                  backgroundColor: 'var(--baxa-purple-bg)',
-                  borderBottom: '2px solid var(--baxa-purple-light)'
-                }}>
-                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Row</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Name</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Major</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Year</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Path</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Info Sessions</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>Avg Rating</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}># Ratings</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summary.allRatings.map((app, index) => (
-                  <tr 
-                    key={app.eid}
-                    style={{ 
-                      borderBottom: '1px solid var(--card-border)',
-                      backgroundColor: app.infoSessionsAttended === 0 ? 'rgba(239, 68, 68, 0.05)' : 
-                                       index % 2 === 0 ? 'white' : '#f9fafb'
-                    }}
-                  >
-                    <td style={{ padding: '0.75rem' }}>
-                      <span className="badge badge-purple">{app.rowNumber}</span>
-                    </td>
-                    <td style={{ padding: '0.75rem', fontWeight: 500 }}>
-                      {app.firstName} {app.lastName}
-                    </td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {app.primaryMajor}
-                        {app.isMcCombs && (
-                          <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>McCombs</span>
-                        )}
-                      </div>
-                    </td>
-                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>{app.year}</td>
-                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                      {app.isReturningPath ? (
-                        <span className="badge badge-warning">Returning</span>
-                      ) : (
-                        <span className="badge" style={{ backgroundColor: '#3b82f6', color: 'white' }}>New</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                      <span 
-                        className="badge"
-                        style={{
-                          backgroundColor: app.infoSessionsAttended > 0 ? '#10b981' : '#ef4444',
-                          color: 'white',
-                        }}
-                      >
-                        {app.infoSessionsAttended}
-                      </span>
-                    </td>
-                    <td style={{ 
-                      padding: '0.75rem', 
-                      textAlign: 'center',
-                      fontWeight: 600,
-                      color: app.avgRating !== null ? 'var(--baxa-purple)' : 'var(--text-secondary)'
-                    }}>
-                      {app.avgRating !== null ? app.avgRating.toFixed(2) : '-'}
-                    </td>
-                    <td style={{ 
-                      padding: '0.75rem', 
-                      textAlign: 'center',
-                      color: 'var(--text-secondary)'
-                    }}>
-                      {app.ratingsCount > 0 ? app.ratingsCount : '-'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AllApplicantsTable allRatings={summary.allRatings} />
         )}
       </div>
       </div>
