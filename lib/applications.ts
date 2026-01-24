@@ -169,10 +169,19 @@ export async function getApplications(): Promise<Application[]> {
   })
 
   // Remove duplicates by keeping only the latest submission for each EID (case-insensitive)
+  // Skip entries with empty EIDs to avoid grouping them together
   const uniqueApplications = new Map<string, typeof applications[0]>()
+  const emptyEidApplications: typeof applications = []
   
   applications.forEach(app => {
     const normalizedEid = app.eid.toLowerCase().trim()
+    
+    // If EID is empty, keep all such applications separately
+    if (!normalizedEid) {
+      emptyEidApplications.push(app)
+      return
+    }
+    
     const existing = uniqueApplications.get(normalizedEid)
     
     // Keep the application with the latest timestamp
@@ -181,5 +190,5 @@ export async function getApplications(): Promise<Application[]> {
     }
   })
 
-  return Array.from(uniqueApplications.values())
+  return [...Array.from(uniqueApplications.values()), ...emptyEidApplications]
 }
