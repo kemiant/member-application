@@ -51,6 +51,7 @@ interface SummaryData {
     ratingsCount: number
     infoSessionsAttended: number
     rowNumber: number
+    headshotUrl: string
   }>
   previousMembersList: Array<{
     eid: string
@@ -210,6 +211,7 @@ export default async function SummaryPage() {
       ratingsCount: app.ratingsCount,
       infoSessionsAttended: app.infoSessionsAttended,
       rowNumber: app.rowNumber,
+      headshotUrl: app.headshotUrl,
     }))
 
   const summary: SummaryData = {

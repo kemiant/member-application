@@ -16,6 +16,7 @@ interface AllApplicantsTableProps {
     ratingsCount: number
     infoSessionsAttended: number
     rowNumber: number
+    headshotUrl: string
   }>
 }
 
@@ -74,7 +75,35 @@ export default function AllApplicantsTable({ allRatings }: AllApplicantsTablePro
                     e.currentTarget.style.textDecoration = 'none'
                   }}
                 >
-                  {app.firstName} {app.lastName}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {app.firstName} {app.lastName}
+                    {app.headshotUrl && (
+                      <a 
+                        href={app.headshotUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+                        title="View headshot"
+                      >
+                        <svg 
+                          width="18" 
+                          height="18" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="#8855bb" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                          style={{ opacity: 0.7 }}
+                        >
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                      </a>
+                    )}
+                  </span>
                 </td>
                 <td style={{ padding: '0.75rem', minWidth: '150px' }}>
                   <span style={{ 
