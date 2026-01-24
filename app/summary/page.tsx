@@ -12,8 +12,8 @@ import '@/styles/theme.css'
 
 interface SummaryData {
   totalApplications: number
-  returningPath: number
-  newPath: number
+  returningApplicants: number
+  newApplicants: number
   byPrimaryMajor: Record<string, number>
   mcCombs: number
   nonMcCombs: number
@@ -101,8 +101,8 @@ export default async function SummaryPage() {
   let mcCombs = 0
   let nonMcCombs = 0
   let previousMembers = 0
-  let returningPath = 0
-  let newPath = 0
+  let returningApplicants = 0
+  let newApplicants = 0
 
   const previousMembersList = []
 
@@ -119,14 +119,9 @@ export default async function SummaryPage() {
       nonMcCombs++
     }
 
-    // Count previous members (previouslyMember starts with "y")
+    // Count previous members (was actually a member before)
     if (app.previouslyMember.toLowerCase().startsWith('y')) {
       previousMembers++
-    }
-
-    // Count returning vs new path
-    if (app.isReturningPath) {
-      returningPath++
       
       // Add to previous members list if they have returning member info
       if (app.returningFavoriteMemory || app.returningReEngage) {
@@ -143,8 +138,18 @@ export default async function SummaryPage() {
           ratingsCount: app.ratingsCount,
         })
       }
-    } else {
-      newPath++
+    }
+
+    // Count returning applicants vs new applicants
+    // Returning = applied before but wasn't a member
+    // New = never applied before and never been a member
+    const appliedBefore = app.appliedBefore?.toLowerCase() === 'yes'
+    const wasMember = app.previouslyMember?.toLowerCase() === 'yes'
+    
+    if (appliedBefore && !wasMember) {
+      returningApplicants++
+    } else if (!appliedBefore && !wasMember) {
+      newApplicants++
     }
   }
 
@@ -209,8 +214,8 @@ export default async function SummaryPage() {
 
   const summary: SummaryData = {
     totalApplications: applications.length,
-    returningPath,
-    newPath,
+    returningApplicants,
+    newApplicants,
     byPrimaryMajor,
     mcCombs,
     nonMcCombs,
@@ -266,7 +271,7 @@ export default async function SummaryPage() {
             Returning Applicants
           </h3>
           <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: 'var(--baxa-purple)', position: 'relative', zIndex: 1 }}>
-            {summary.returningPath}
+            {summary.returningApplicants}
           </p>
         </div>
 
