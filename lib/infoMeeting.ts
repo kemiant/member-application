@@ -1,4 +1,5 @@
 import { getSheetsClient } from './sheets'
+import { cache } from './cache'
 
 export interface InfoMeetingAttendee {
   eid: string
@@ -67,6 +68,12 @@ export async function getInfoMeetingAttendees(): Promise<InfoMeetingAttendee[]> 
 }
 
 export async function getInfoMeetingAttendanceCounts(): Promise<Map<string, number>> {
+  // Check cache first (2 minute TTL)
+  const cached = cache.get<Map<string, number>>('infoMeetings', 120000)
+  if (cached) {
+    return cached
+  }
+
   const attendees = await getInfoMeetingAttendees()
   const countMap = new Map<string, number>()
   
@@ -75,6 +82,9 @@ export async function getInfoMeetingAttendanceCounts(): Promise<Map<string, numb
     const currentCount = countMap.get(attendee.eid) || 0
     countMap.set(attendee.eid, currentCount + 1)
   })
+  
+  // Cache the result
+  cache.set('infoMeetings', countMap)
   
   return countMap
 }

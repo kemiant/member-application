@@ -1,4 +1,5 @@
 import { getSheetsClient } from './sheets'
+import { cache } from './cache'
 
 export interface Rating {
   eid: string
@@ -96,6 +97,10 @@ export async function upsertRating(rating: {
       valueInputOption: 'RAW',
       requestBody: { values },
     })
+    
+    // Clear ratings cache to force refresh
+    cache.clear('ratings')
+    
     return { updated: true }
   } else {
     // Append new rating
@@ -105,12 +110,22 @@ export async function upsertRating(rating: {
       valueInputOption: 'RAW',
       requestBody: { values },
     })
+    
+    // Clear ratings cache to force refresh
+    cache.clear('ratings')
+    
     return { updated: false }
   }
 }
 
 // Get all ratings and compute average ratings per EID
 export async function getRatingsAvgMap(): Promise<Map<string, RatingStats>> {
+  // Check cache first (2 minute TTL)
+  const cached = cache.get<Map<string, RatingStats>>('ratings', 120000)
+  if (cached) {
+    return cached
+  }
+
   const sheets = getSheetsClient()
   const spreadsheetId = process.env.GOOGLE_SHEETS_ID!
 
@@ -161,6 +176,9 @@ export async function getRatingsAvgMap(): Promise<Map<string, RatingStats>> {
       comments: data.comments
     })
   })
+
+  // Cache the result
+  cache.set('ratings', avgMap)
 
   return avgMap
 }

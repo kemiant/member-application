@@ -1,4 +1,5 @@
 import { getSheetsClient } from './sheets'
+import { cache } from './cache'
 
 export interface Application {
   eid: string
@@ -37,6 +38,12 @@ export interface Application {
 const RESUME_HEADER = "Attach your resume.\n\n*If accepted, this will only be used for resume books to our sponsors. Your resume does not affect your application.*"
 
 export async function getApplications(): Promise<Application[]> {
+  // Check cache first (2 minute TTL)
+  const cached = cache.get<Application[]>('applications', 120000)
+  if (cached) {
+    return cached
+  }
+
   const sheets = getSheetsClient()
   const spreadsheetId = process.env.GOOGLE_SHEETS_ID!
 
@@ -196,5 +203,10 @@ export async function getApplications(): Promise<Application[]> {
     }
   })
 
-  return [...Array.from(uniqueApplications.values()), ...emptyEidApplications]
+  const result = [...Array.from(uniqueApplications.values()), ...emptyEidApplications]
+  
+  // Cache the result
+  cache.set('applications', result)
+  
+  return result
 }
