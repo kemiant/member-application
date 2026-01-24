@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { appendRating, updateRating, hasRated } from '@/lib/ratings'
+import { upsertRating } from '@/lib/ratings'
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -32,26 +32,16 @@ export async function POST(request: NextRequest) {
 
     const normalizedEid = eid.toLowerCase().trim()
     
-    // Check if this rater has already rated this applicant
-    const alreadyRated = await hasRated(normalizedEid, raterName)
-    
-    const ratingData = {
+    // Use upsert to either update existing rating or append new one
+    const result = await upsertRating({
       eid: normalizedEid,
       raterName,
       rating,
       comment: comment || '',
       assignedRows: assignedRows || '',
-    }
+    })
 
-    if (alreadyRated) {
-      // Update existing rating
-      await updateRating(ratingData)
-      return NextResponse.json({ success: true, updated: true })
-    } else {
-      // Append new rating
-      await appendRating(ratingData)
-      return NextResponse.json({ success: true, updated: false })
-    }
+    return NextResponse.json({ success: true, updated: result.updated })
   } catch (error) {
     console.error('Error submitting rating:', error)
     return NextResponse.json(
