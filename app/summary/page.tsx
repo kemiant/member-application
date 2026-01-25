@@ -52,6 +52,7 @@ interface SummaryData {
     infoSessionsAttended: number
     rowNumber: number
     headshotUrl: string
+    email: string
   }>
   previousMembersList: Array<{
     eid: string
@@ -208,10 +209,11 @@ export default async function SummaryPage() {
       isMcCombs: app.isMcCombs,
       isReturningPath: app.isReturningPath,
       avgRating: app.avgRating,
-      ratingsCount: app.ratingsCount,
-      infoSessionsAttended: app.infoSessionsAttended,
+      coffeeChatCount: app.coffeeChatCount,
       rowNumber: app.rowNumber,
       headshotUrl: app.headshotUrl,
+      email: app.email,
+      notes: '',
     }))
 
   const summary: SummaryData = {
