@@ -32,14 +32,15 @@ interface TopRatedSectionProps {
 export default function TopRatedSection({ topRated, top60McCombs, top60NonMcCombs, top60ByYear }: TopRatedSectionProps) {
   const [copied, setCopied] = useState(false)
   const [selectedEid, setSelectedEid] = useState<string | null>(null)
-  const [filterType, setFilterType] = useState<'top' | 'minimum'>('top')
+  const [filterType, setFilterType] = useState<'top' | 'minimum' | null>(null)
   const [topN, setTopN] = useState(60)
   const [minimumScore, setMinimumScore] = useState(3.0)
 
-  // Filter based on selected filter type
-  const filteredApps = filterType === 'top' 
-    ? topRated.slice(0, topN)
-    : topRated.filter(app => app.avgRating >= minimumScore)
+  // Filter based on selected filter type - show nothing if no filter selected
+  const filteredApps = !filterType ? [] : 
+    filterType === 'top' 
+      ? topRated.slice(0, topN)
+      : topRated.filter(app => app.avgRating >= minimumScore)
 
   const copyFilteredEmails = () => {
     const emails = filteredApps.map(app => app.email).join(', ')
@@ -101,8 +102,8 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Filter by:</label>
             <select 
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as 'top' | 'minimum')}
+              value={filterType || ''}
+              onChange={(e) => setFilterType(e.target.value as 'top' | 'minimum' || null)}
               style={{
                 padding: '0.5rem',
                 borderRadius: '0.375rem',
@@ -110,6 +111,7 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
                 fontSize: '0.875rem'
               }}
             >
+              <option value="">Select filter...</option>
               <option value="top">Top N</option>
               <option value="minimum">Minimum Score</option>
             </select>
@@ -244,6 +246,10 @@ export default function TopRatedSection({ topRated, top60McCombs, top60NonMcComb
       
       {topRated.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)' }}>No rated applications yet</p>
+      ) : !filterType ? (
+        <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+          Select a filter above to view applicants
+        </p>
       ) : (
         <>
           <div style={{ 
