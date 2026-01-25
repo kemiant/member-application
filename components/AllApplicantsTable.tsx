@@ -367,7 +367,7 @@ export default function AllApplicantsTable({ allRatings }: AllApplicantsTablePro
                   style={{ cursor: 'pointer', width: '16px', height: '16px' }}
                 />
               </th>
-              <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Status</th>
+              <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, minWidth: '120px' }}>Status</th>
               <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Row</th>
               <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Name</th>
               <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Major</th>
@@ -403,7 +403,7 @@ export default function AllApplicantsTable({ allRatings }: AllApplicantsTablePro
                     style={{ cursor: 'pointer', width: '16px', height: '16px' }}
                   />
                 </td>
-                <td style={{ padding: '0.75rem' }}>
+                <td style={{ padding: '0.75rem', minWidth: '120px' }}>
                   {status === 'accepted' && (
                     <span style={{ 
                       backgroundColor: '#10b981', 
@@ -411,7 +411,8 @@ export default function AllApplicantsTable({ allRatings }: AllApplicantsTablePro
                       padding: '0.25rem 0.5rem', 
                       borderRadius: '4px',
                       fontSize: '0.75rem',
-                      fontWeight: 600
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
                     }}>
                       ✓ Accepted
                     </span>
@@ -423,7 +424,8 @@ export default function AllApplicantsTable({ allRatings }: AllApplicantsTablePro
                       padding: '0.25rem 0.5rem', 
                       borderRadius: '4px',
                       fontSize: '0.75rem',
-                      fontWeight: 600
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
                     }}>
                       ↗ Leaning Yes
                     </span>
@@ -435,7 +437,8 @@ export default function AllApplicantsTable({ allRatings }: AllApplicantsTablePro
                       padding: '0.25rem 0.5rem', 
                       borderRadius: '4px',
                       fontSize: '0.75rem',
-                      fontWeight: 600
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
                     }}>
                       ↘ Leaning No
                     </span>
@@ -447,7 +450,8 @@ export default function AllApplicantsTable({ allRatings }: AllApplicantsTablePro
                       padding: '0.25rem 0.5rem', 
                       borderRadius: '4px',
                       fontSize: '0.75rem',
-                      fontWeight: 600
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
                     }}>
                       ✗ Declined
                     </span>
