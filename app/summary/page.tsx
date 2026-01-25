@@ -48,11 +48,11 @@ interface SummaryData {
     isMcCombs: boolean
     isReturningPath: boolean
     avgRating: number | null
-    ratingsCount: number
-    infoSessionsAttended: number
+    coffeeChatCount: number
     rowNumber: number
     headshotUrl: string
     email: string
+    notes: string
   }>
   previousMembersList: Array<{
     eid: string
